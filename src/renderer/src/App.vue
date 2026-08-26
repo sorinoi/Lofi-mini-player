@@ -55,9 +55,11 @@ const showShortcutsModal = ref(false)
 
 function handleTogglePlayPause(): void {
   if (ytStore.isPlaying) {
-    ytStore.isPlaying = false
-    youtubeService.setMute(true)
-    audioEngine.setExternalSourceState(false, playerStore.volume, playerStore.isMuted)
+    ytStore.togglePlayPause()
+  } else if (playerStore.isPlaying) {
+    playerStore.togglePlay()
+  } else if (appStore.activeTab === 'youtube') {
+    ytStore.togglePlayPause()
   } else {
     playerStore.togglePlay()
   }

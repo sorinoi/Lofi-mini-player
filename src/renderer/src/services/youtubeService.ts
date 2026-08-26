@@ -21,8 +21,8 @@ export const YOUTUBE_LOFI_PRESETS: YouTubeStreamPreset[] = [
     id: 'lofigirl-study',
     title: 'Lofi Hip Hop Radio 📚 Beats to Relax / Study to',
     channel: 'Lofi Girl',
-    videoId: 'jfKfPfyJRdk',
-    thumbnailUrl: 'https://img.youtube.com/vi/jfKfPfyJRdk/hqdefault.jpg',
+    videoId: 'rFZHOHl-L8A',
+    thumbnailUrl: 'https://img.youtube.com/vi/rFZHOHl-L8A/hqdefault.jpg',
     category: 'study',
     isLive: true
   },
@@ -37,16 +37,16 @@ export const YOUTUBE_LOFI_PRESETS: YouTubeStreamPreset[] = [
   },
   {
     id: 'chillhop-radio',
-    title: 'Chillhop Radio ☕ Jazzy & Lofi Hip Hop Beats',
+    title: 'Chillhop Essentials Radio ☕ Jazzy & Lofi Hip Hop Beats',
     channel: 'Chillhop Music',
-    videoId: '5yx6BWlEvq4',
-    thumbnailUrl: 'https://img.youtube.com/vi/5yx6BWlEvq4/hqdefault.jpg',
+    videoId: 'ohrjSFplPzk',
+    thumbnailUrl: 'https://img.youtube.com/vi/ohrjSFplPzk/hqdefault.jpg',
     category: 'jazz',
     isLive: true
   },
   {
     id: 'synthwave-radio',
-    title: 'Synthwave Radio 🌆 Chill Synth / Retro Beats',
+    title: 'Synthwave Radio 🌌 Beats to Chill / Game to',
     channel: 'Lofi Girl - Synthwave',
     videoId: '4xDzrJKXOOY',
     thumbnailUrl: 'https://img.youtube.com/vi/4xDzrJKXOOY/hqdefault.jpg',
@@ -55,12 +55,12 @@ export const YOUTUBE_LOFI_PRESETS: YouTubeStreamPreset[] = [
   },
   {
     id: 'coffee-shop-lofi',
-    title: 'Tokyo Cafe Lofi ☕ Cozy Study & Chill Sessions',
-    channel: 'Coffee Shop Vibes',
+    title: 'Coffee Shop Radio ☕ 24/7 Lofi & Jazzy Hip-Hop Beats',
+    channel: 'STEEZYASFUCK',
     videoId: 'lP26UCnoH9s',
     thumbnailUrl: 'https://img.youtube.com/vi/lP26UCnoH9s/hqdefault.jpg',
     category: 'chill',
-    isLive: false
+    isLive: true
   }
 ]
 
@@ -68,6 +68,23 @@ declare global {
   interface Window {
     YT?: any
     onYouTubeIframeAPIReady?: () => void
+  }
+}
+
+export function getYouTubeErrorMessage(errorCode: number): string {
+  switch (errorCode) {
+    case 2:
+      return 'Invalid YouTube Video ID or URL parameters.'
+    case 5:
+      return 'HTML5 playback error. Please try again.'
+    case 100:
+      return 'Video not found, ended, or has been removed.'
+    case 101:
+    case 150:
+    case 152:
+      return 'Embedding restricted by owner or region. Please try another stream or station.'
+    default:
+      return `YouTube playback error (${errorCode}).`
   }
 }
 
@@ -79,6 +96,7 @@ class YouTubeService {
   private isPlayingState = false
   private currentVolume = 0.8
   private isCurrentMuted = false
+  private currentElementId = 'youtube-player-element'
 
   public initApi(): Promise<void> {
     return new Promise((resolve) => {
@@ -110,67 +128,162 @@ class YouTubeService {
     })
   }
 
+  /**
+   * Ensures the target DOM element exists, recreating it inside a wrapper container if needed.
+   */
+  private ensureTargetElement(elementId: string): HTMLElement | null {
+    let target = document.getElementById(elementId)
+    if (!target) {
+      const wrapper = document.getElementById(`${elementId}-wrapper`)
+      if (wrapper) {
+        target = document.createElement('div')
+        target.id = elementId
+        target.className = 'w-full h-full'
+        wrapper.appendChild(target)
+      }
+    }
+    return target
+  }
+
   public createPlayer(
     elementId: string,
     videoId: string,
     initialVolume: number,
     initialMuted: boolean,
-    onStateChange?: (state: number) => void
+    onStateChange?: (state: number) => void,
+    onError?: (code: number, message: string) => void
   ): Promise<any> {
+    this.currentElementId = elementId
     this.currentVolume = initialVolume
     this.isCurrentMuted = initialMuted
 
     return new Promise(async (resolve) => {
       await this.initApi()
 
-      // If existing player, destroy first
+      // Cleanly destroy prior instance
       if (this.player) {
         try {
           this.player.destroy()
         } catch {}
+        this.player = null
       }
 
-      this.player = new window.YT.Player(elementId, {
-        videoId,
-        width: '100%',
-        height: '100%',
-        playerVars: {
-          autoplay: 1,
-          controls: 1,
-          enablejsapi: 1,
-          rel: 0,
-          modestbranding: 1,
-          iv_load_policy: 3
-        },
-        events: {
-          onReady: (event: any) => {
-            if (initialMuted) {
-              event.target.mute()
-            } else {
-              event.target.unMute()
-              event.target.setVolume(Math.round(initialVolume * 100))
-            }
-            this.isPlayingState = true
-            audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
-            resolve(this.player)
+      // Guarantee target element presence in DOM
+      const targetEl = this.ensureTargetElement(elementId)
+      if (!targetEl) {
+        console.warn(`[YouTubeService] DOM element #${elementId} not found`)
+        resolve(null)
+        return
+      }
+
+      const isFileProtocol =
+        typeof window !== 'undefined' &&
+        (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null')
+      const effectiveOrigin = isFileProtocol ? 'https://localhost' : window.location.origin
+
+      try {
+        this.player = new window.YT.Player(elementId, {
+          host: 'https://www.youtube-nocookie.com',
+          videoId,
+          width: '100%',
+          height: '100%',
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            enablejsapi: 1,
+            rel: 0,
+            modestbranding: 1,
+            iv_load_policy: 3,
+            origin: effectiveOrigin,
+            playsinline: 1
           },
-          onStateChange: (event: any) => {
-            // 1: PLAYING, 2: PAUSED, 0: ENDED, 3: BUFFERING
-            if (event.data === 1) {
+          events: {
+            onReady: (event: any) => {
+              if (initialMuted) {
+                try {
+                  event.target.mute()
+                } catch {}
+              } else {
+                try {
+                  event.target.unMute()
+                  event.target.setVolume(Math.round(initialVolume * 100))
+                } catch {}
+              }
+              try {
+                event.target.playVideo()
+              } catch {}
+
               this.isPlayingState = true
               audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
-            } else if (event.data === 2 || event.data === 0) {
+              resolve(this.player)
+            },
+            onStateChange: (event: any) => {
+              // 1: PLAYING, 2: PAUSED, 0: ENDED, 3: BUFFERING
+              if (event.data === 1 || event.data === 3) {
+                this.isPlayingState = true
+                audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
+              } else if (event.data === 2 || event.data === 0) {
+                this.isPlayingState = false
+                audioEngine.setExternalSourceState(false, this.currentVolume, this.isCurrentMuted)
+              }
+
+              if (onStateChange) {
+                onStateChange(event.data)
+              }
+            },
+            onError: (event: any) => {
+              const code = event.data as number
+              const message = getYouTubeErrorMessage(code)
+              console.warn(`[YouTubeService] Player error (${code}):`, message)
               this.isPlayingState = false
               audioEngine.setExternalSourceState(false, this.currentVolume, this.isCurrentMuted)
-            }
 
-            if (onStateChange) {
-              onStateChange(event.data)
+              if (onError) {
+                onError(code, message)
+              }
             }
           }
-        }
-      })
+        })
+      } catch (err) {
+        console.error('[YouTubeService] Failed to construct YT.Player:', err)
+        resolve(null)
+      }
     })
+  }
+
+  public playVideo(): void {
+    if (this.player && typeof this.player.playVideo === 'function') {
+      try {
+        this.player.playVideo()
+        this.isPlayingState = true
+        audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
+      } catch (e) {
+        console.warn('[YouTubeService] playVideo error:', e)
+      }
+    }
+  }
+
+  public pauseVideo(): void {
+    if (this.player && typeof this.player.pauseVideo === 'function') {
+      try {
+        this.player.pauseVideo()
+        this.isPlayingState = false
+        audioEngine.setExternalSourceState(false, this.currentVolume, this.isCurrentMuted)
+      } catch (e) {
+        console.warn('[YouTubeService] pauseVideo error:', e)
+      }
+    }
+  }
+
+  public destroyPlayer(): void {
+    if (this.player) {
+      try {
+        this.player.destroy()
+      } catch {}
+      this.player = null
+    }
+    this.isPlayingState = false
+    audioEngine.setExternalSourceState(false, this.currentVolume, this.isCurrentMuted)
   }
 
   public setVolume(volume: number): void {
@@ -208,40 +321,63 @@ class YouTubeService {
         this.player.loadVideoById(videoId)
         this.isPlayingState = true
         audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
-      } catch {}
+        return
+      } catch (e) {
+        console.warn('[YouTubeService] loadVideoById error, attempting recreation:', e)
+      }
     }
+
+    // If player wasn't initialized or failed, recreate it
+    this.createPlayer(
+      this.currentElementId,
+      videoId,
+      this.currentVolume,
+      this.isCurrentMuted
+    )
   }
 
   public extractVideoId(urlOrId: string): string | null {
     if (!urlOrId || typeof urlOrId !== 'string') return null
     const cleaned = urlOrId.trim()
 
-    // Direct 11-character ID
+    // 1. Direct 11-character ID
     if (/^[a-zA-Z0-9_-]{11}$/.test(cleaned)) {
       return cleaned
     }
 
-    // Standard watch URL: youtube.com/watch?v=...
-    const watchMatch = cleaned.match(/[?&]v=([a-zA-Z0-9_-]{11})/)
+    // 2. Standard watch URL (watch?v=... with any query param order)
+    const watchMatch = cleaned.match(/(?:youtube\.com|m\.youtube\.com|music\.youtube\.com)\/watch\?(?:[^&]*&)*v=([a-zA-Z0-9_-]{11})/)
     if (watchMatch) return watchMatch[1]
 
-    // Shortened URL: youtu.be/...
+    // 3. Shortened URL (youtu.be/...)
     const shortMatch = cleaned.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)
     if (shortMatch) return shortMatch[1]
 
-    // Live URL: youtube.com/live/...
+    // 4. Live URL (youtube.com/live/...)
     const liveMatch = cleaned.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/)
     if (liveMatch) return liveMatch[1]
 
-    // Embed URL: youtube.com/embed/...
+    // 5. Shorts URL (youtube.com/shorts/...)
+    const shortsMatch = cleaned.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/)
+    if (shortsMatch) return shortsMatch[1]
+
+    // 6. Embed URL (youtube.com/embed/...)
     const embedMatch = cleaned.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/)
     if (embedMatch) return embedMatch[1]
+
+    // 7. General fallback regex for ?v= anywhere in URL
+    const genericV = cleaned.match(/[?&]v=([a-zA-Z0-9_-]{11})/)
+    if (genericV) return genericV[1]
 
     return null
   }
 
   public getThumbnailUrl(videoId: string): string {
     return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+  }
+
+  public get isPlaying(): boolean {
+    return this.isPlayingState
   }
 }
 

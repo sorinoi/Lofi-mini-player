@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { watch, onMounted, onUnmounted } from 'vue'
 import {
   Play,
   Bookmark,
@@ -9,17 +9,19 @@ import {
   RadioTower,
   Search,
   Trash2,
-  Tv
+  Tv,
+  Loader2,
+  AlertCircle,
+  X
 } from 'lucide-vue-next'
 import { useYouTubeStore } from '../../stores/youtube'
 import { usePlayerStore } from '../../stores/player'
-import { youtubeService, YOUTUBE_LOFI_PRESETS, type YouTubeStreamPreset } from '../../services/youtubeService'
+import { youtubeService, YOUTUBE_LOFI_PRESETS } from '../../services/youtubeService'
 import { audioEngine } from '../../services/audioEngine'
 import VisualizerContainer from '../visualizers/VisualizerContainer.vue'
 
 const ytStore = useYouTubeStore()
 const playerStore = usePlayerStore()
-const inputError = ref<string | null>(null)
 
 async function mountYouTubePlayer(): Promise<void> {
   try {
@@ -30,17 +32,23 @@ async function mountYouTubePlayer(): Promise<void> {
       playerStore.isMuted,
       (state: number) => {
         // 1: PLAYING, 2: PAUSED, 0: ENDED, 3: BUFFERING
-        if (state === 1 || state === 3) {
+        if (state === 1) {
           ytStore.isPlaying = true
+          ytStore.isLoading = false
+          ytStore.clearError()
           audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
+        } else if (state === 3) {
+          ytStore.isLoading = true
         } else if (state === 2 || state === 0) {
           ytStore.isPlaying = false
+          ytStore.isLoading = false
           audioEngine.setExternalSourceState(false, playerStore.volume, playerStore.isMuted)
         }
+      },
+      (code: number, message: string) => {
+        ytStore.handlePlayerError(code, message)
       }
     )
-    ytStore.isPlaying = true
-    audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
   } catch (e) {
     console.warn('Failed to initialize YouTube IFrame Player:', e)
   }
@@ -53,19 +61,18 @@ watch(
   }
 )
 
-function handleLoadUrl(): void {
-  inputError.value = null
-  if (!ytStore.urlInput.trim()) return
-
-  const success = ytStore.playUrl(ytStore.urlInput)
-  if (!success) {
-    inputError.value = 'Invalid YouTube URL or Video ID. Please check the link format.'
-  }
+async function handleLoadUrl(): Promise<void> {
+  if (!ytStore.urlInput.trim() || ytStore.isLoading) return
+  await ytStore.playUrl(ytStore.urlInput)
 }
 
 onMounted(() => {
   ytStore.initBookmarks()
   mountYouTubePlayer()
+})
+
+onUnmounted(() => {
+  // Keep background audio unless switched
 })
 </script>
 
@@ -91,19 +98,39 @@ onMounted(() => {
             <input
               type="text"
               v-model="ytStore.urlInput"
-              placeholder="Paste YouTube link or Video ID..."
-              class="w-full pl-10 pr-3 py-2 bg-lofi-surface/80 border border-lofi-border rounded-xl text-xs text-lofi-text placeholder-lofi-muted focus:outline-none focus:border-lofi-pink transition-colors"
+              :disabled="ytStore.isLoading"
+              placeholder="Paste YouTube link (Watch, Shorts, Live, @Channel)..."
+              class="w-full pl-10 pr-3 py-2 bg-lofi-surface/80 border border-lofi-border rounded-xl text-xs text-lofi-text placeholder-lofi-muted focus:outline-none focus:border-lofi-pink transition-colors disabled:opacity-60"
             />
           </div>
           <button
             type="submit"
-            class="px-4 py-2 rounded-xl bg-lofi-pink hover:bg-lofi-pink/90 text-lofi-bg text-xs font-bold shadow-md transition-all active:scale-95 whitespace-nowrap"
+            :disabled="ytStore.isLoading || !ytStore.urlInput.trim()"
+            class="px-4 py-2 rounded-xl bg-lofi-pink hover:bg-lofi-pink/90 text-lofi-bg text-xs font-bold shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Play Stream
+            <Loader2 v-if="ytStore.isLoading" class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ ytStore.isLoading ? 'Resolving...' : 'Play Stream' }}</span>
           </button>
         </form>
-        <span v-if="inputError" class="text-2xs text-red-400 pl-1">{{ inputError }}</span>
       </div>
+    </div>
+
+    <!-- Error Alert Banner -->
+    <div
+      v-if="ytStore.errorMessage"
+      class="p-3.5 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-between gap-3 text-xs text-red-300 backdrop-blur-sm shadow-md animate-fadeIn"
+    >
+      <div class="flex items-center gap-2.5 min-w-0">
+        <AlertCircle class="w-4 h-4 text-red-400 flex-shrink-0" />
+        <span class="truncate">{{ ytStore.errorMessage }}</span>
+      </div>
+      <button
+        @click="ytStore.clearError"
+        class="p-1 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors flex-shrink-0"
+        title="Dismiss"
+      >
+        <X class="w-3.5 h-3.5" />
+      </button>
     </div>
 
     <!-- Main Player Container (Dual Mode: Video vs VU Visualizer) -->
@@ -155,12 +182,23 @@ onMounted(() => {
 
       <!-- Display Area: 16:9 Video Embed OR Visualizer (Using v-show to prevent reload) -->
       <div class="w-full relative rounded-2xl overflow-hidden bg-black/60 border border-lofi-border flex items-center justify-center min-h-[360px] aspect-video">
-        <!-- 1. Video Mode Container -->
+        <!-- 1. Video Mode Container (Protected with Non-Destructive Wrapper) -->
         <div
           v-show="ytStore.displayMode === 'video'"
           class="w-full h-full absolute inset-0 flex items-center justify-center"
         >
-          <div id="youtube-player-element" class="w-full h-full"></div>
+          <div id="youtube-player-element-wrapper" class="w-full h-full relative">
+            <div id="youtube-player-element" class="w-full h-full"></div>
+
+            <!-- Loading / Buffering Overlay -->
+            <div
+              v-if="ytStore.isLoading"
+              class="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center gap-2.5 z-10 pointer-events-none"
+            >
+              <Loader2 class="w-8 h-8 text-lofi-pink animate-spin" />
+              <p class="text-xs text-lofi-text font-medium">Connecting to stream...</p>
+            </div>
+          </div>
         </div>
 
         <!-- 2. VU Visualizer Mode -->
@@ -249,5 +287,20 @@ onMounted(() => {
 <style scoped>
 .text-2xs {
   font-size: 0.68rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
 }
 </style>

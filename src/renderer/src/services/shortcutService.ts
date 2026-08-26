@@ -9,9 +9,9 @@ export function setupKeyboardShortcuts(): () => void {
 
   function togglePlayPause(): void {
     if (ytStore.isPlaying) {
-      ytStore.isPlaying = false
-      youtubeService.setMute(true)
-      audioEngine.setExternalSourceState(false, playerStore.volume, playerStore.isMuted)
+      ytStore.togglePlayPause()
+    } else if (playerStore.isPlaying) {
+      playerStore.togglePlay()
     } else {
       playerStore.togglePlay()
     }

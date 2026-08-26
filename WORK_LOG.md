@@ -5,9 +5,9 @@
 ---
 
 ## 🎯 Active Task Pointer
-- **Current Task:** Subscription Rate Limit & Quota Monitor (`rate_limit_monitor`)
-- **Task File:** [task/rate_limit_monitor_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/rate_limit_monitor_task.md)
-- **Current Status:** All Phases Completed, Packaged & Delivered 🟢
+- **Current Task:** YouTube Stream Playback & URL Resolver Fix (`youtube_stream_fix`)
+- **Task File:** [task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md)
+- **Current Status:** All Phases Completed & Verified 🟢
 
 ---
 
@@ -32,12 +32,25 @@
 - [x] **Sub-Feature 1:** Mini-Player Timer Widget & Dynamic Taskbar Countdown ([task/mini_timer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/mini_timer_task.md))
 - [x] **Packaging & Distribution:** Build `.exe` installer & Complete `README.md` ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
 - [x] **Sub-Feature 2:** Subscription Codex & AI Rate Limit / Quota Monitor ([task/rate_limit_monitor_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/rate_limit_monitor_task.md))
+- [x] **Sub-Feature 3:** YouTube Stream Playback & Live URL Resolver Fix ([task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
 
-### [2026-08-26]
+### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
+- **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์และช่องสด
+- **Details:**
+  - เพิ่ม `session.webRequest.onBeforeSendHeaders` แทรก `Referer` และ `Origin` ของ `https://www.youtube.com` ใน [src/main/index.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/index.ts) เพื่อแก้ไข YouTube Error 150/153 ถาวร
+  - เพิ่ม `--autoplay-policy=no-user-gesture-required` ให้ Chromium เล่นเสียง/วิดีโออัตโนมัติ
+  - พัฒนา [src/main/youtubeResolver.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/youtubeResolver.ts) รองรับการแกะ `videoId` จากทุกรูปแบบ (Watch, Shorts, Live, Embed, YouTu.be) รวมถึงช่องสด `@Channel/live` (เช่น `@LofiGirl/live`, `@ChillhopMusic/live`)
+  - ดึง Metadata (Title, Channel Name, Thumbnail) ผ่าน YouTube oEmbed อัตโนมัติ
+  - ปรับปรุง [src/renderer/src/services/youtubeService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/youtubeService.ts) ป้องกันปัญหา DOM Node หาย และดักจับ `onError` (2, 5, 100, 101, 150)
+  - อัปเดต Presets ใน `YOUTUBE_LOFI_PRESETS` เป็น Live Streams ปัจจุบัน
+  - ซิงค์ระบบ Play/Pause ใน [MiniPlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/layout/MiniPlayer.vue), [App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) และ [shortcutService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/shortcutService.ts)
+  - ผ่านการทดสอบ `npm run typecheck` และ `npm run build` สำเร็จ 100%
+
+### [2026-08-26] - Task 2: Subscription Codex & AI Rate Limit
 - **Task:** พัฒนาระบบ Subscription Rate Limit & Quota Monitor (อ่านจาก Local Codex CLI โดยตรง)
 - **Details:**
   - พัฒนา [codexDetector.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/codexDetector.ts) ให้อ่านและตรวจจับสถานะจาก `~/.codex/auth.json`, `~/.codex/config.toml` และประวัติเซสชันใน `session_index.jsonl` ได้โดยตรง 100%

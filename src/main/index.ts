@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, Rectangle } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, Rectangle, session } from 'electron'
 import { join, basename, extname } from 'path'
 import { readdirSync, statSync } from 'fs'
 import { createHash } from 'crypto'
@@ -8,6 +8,10 @@ import { detectLocalCodexQuota } from './codexDetector'
 import { fetchGitHubCopilotQuota } from './githubCopilotDetector'
 import { fetchOpenAIQuota } from './openAIDetector'
 import { fetchZhipuQuota } from './zhipuDetector'
+import { resolveYouTubeUrl, fetchYouTubeMetadata } from './youtubeResolver'
+
+// Disable user gesture requirement for media autoplay in Chromium
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 let mainWindow: BrowserWindow | null = null
 let normalBounds: Rectangle = { x: 100, y: 100, width: 1040, height: 720 }
@@ -375,8 +379,54 @@ ipcMain.handle('quota:fetchUsage', async (_, payload: { provider: string; token?
   }
 })
 
+// IPC Handlers for YouTube Stream URL Resolution & Metadata
+ipcMain.handle('youtube:resolveUrl', async (_, input: string) => {
+  return await resolveYouTubeUrl(input)
+})
+
+ipcMain.handle('youtube:fetchMetadata', async (_, videoId: string) => {
+  return await fetchYouTubeMetadata(videoId)
+})
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron.lofiplayer')
+
+  // Prevent YouTube embed blocking in Electron packaged app while preserving standard dev origins
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    {
+      urls: [
+        '*://*.youtube.com/*',
+        '*://*.youtube-nocookie.com/*',
+        '*://*.googlevideo.com/*',
+        '*://*.ytimg.com/*'
+      ]
+    },
+    (details, callback) => {
+      const requestHeaders = { ...details.requestHeaders }
+      const currentReferer = requestHeaders['Referer'] || requestHeaders['referer'] || ''
+
+      // In production (file://) or if Referer is missing, provide standard origin
+      if (!currentReferer || currentReferer.startsWith('file:') || currentReferer === 'null') {
+        requestHeaders['Referer'] = 'https://localhost/'
+      }
+
+      callback({ requestHeaders })
+    }
+  )
+
+  // Remove restrictive frame headers from YouTube responses
+  session.defaultSession.webRequest.onHeadersReceived(
+    {
+      urls: ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*']
+    },
+    (details, callback) => {
+      const responseHeaders = { ...details.responseHeaders }
+      delete responseHeaders['x-frame-options']
+      delete responseHeaders['X-Frame-Options']
+      delete responseHeaders['frame-options']
+      callback({ responseHeaders })
+    }
+  )
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window, { escToCloseWindow: false, zoom: false })

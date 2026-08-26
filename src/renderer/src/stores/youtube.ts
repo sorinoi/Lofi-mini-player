@@ -17,10 +17,13 @@ export interface YouTubeBookmark {
 export const useYouTubeStore = defineStore('youtube', () => {
   const playerStore = usePlayerStore()
 
-  const currentVideoId = ref<string>('jfKfPfyJRdk') // Default to Lofi Girl
-  const currentTitle = ref<string>('Lofi Hip Hop Radio - Beats to Relax/Study to')
+  // Default to currently active Lofi Girl 24/7 stream
+  const currentVideoId = ref<string>('rFZHOHl-L8A')
+  const currentTitle = ref<string>('Lofi Hip Hop Radio 📚 Beats to Relax / Study to')
   const currentChannel = ref<string>('Lofi Girl')
   const isPlaying = ref<boolean>(false)
+  const isLoading = ref<boolean>(false)
+  const errorMessage = ref<string | null>(null)
   const displayMode = ref<'video' | 'visualizer'>('video')
   const bookmarks = ref<YouTubeBookmark[]>([])
   const urlInput = ref<string>('')
@@ -50,6 +53,9 @@ export const useYouTubeStore = defineStore('youtube', () => {
   }
 
   function playPreset(preset: YouTubeStreamPreset): void {
+    errorMessage.value = null
+    isLoading.value = false
+
     // Pause local audio playback when YouTube starts
     playerStore.pause()
 
@@ -57,25 +63,85 @@ export const useYouTubeStore = defineStore('youtube', () => {
     currentTitle.value = preset.title
     currentChannel.value = preset.channel
     isPlaying.value = true
+
     youtubeService.loadVideo(preset.videoId)
     audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
     checkIfBookmarked()
   }
 
-  function playUrl(urlOrId: string, customTitle?: string): boolean {
-    const videoId = youtubeService.extractVideoId(urlOrId)
-    if (!videoId) return false
+  async function playUrl(urlOrId: string, customTitle?: string): Promise<boolean> {
+    if (!urlOrId || !urlOrId.trim()) return false
 
-    playerStore.pause()
-    currentVideoId.value = videoId
-    currentTitle.value = customTitle || `YouTube Stream (${videoId})`
-    currentChannel.value = 'YouTube Audio'
-    isPlaying.value = true
-    youtubeService.loadVideo(videoId)
-    audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
-    urlInput.value = ''
-    checkIfBookmarked()
-    return true
+    errorMessage.value = null
+    isLoading.value = true
+
+    try {
+      // 1. Try Main Process Resolver (handles @Channel/live, Shorts, and fetches oEmbed metadata)
+      if (window.api?.resolveYouTubeUrl) {
+        const resolved = await window.api.resolveYouTubeUrl(urlOrId.trim())
+        if (resolved && resolved.success && resolved.videoId) {
+          playerStore.pause()
+          currentVideoId.value = resolved.videoId
+          currentTitle.value = customTitle || resolved.title || `YouTube Stream (${resolved.videoId})`
+          currentChannel.value = resolved.channel || 'YouTube Channel'
+          isPlaying.value = true
+
+          youtubeService.loadVideo(resolved.videoId)
+          audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
+          urlInput.value = ''
+          isLoading.value = false
+          checkIfBookmarked()
+          return true
+        } else if (resolved && !resolved.success) {
+          errorMessage.value = resolved.error || 'Invalid YouTube URL or Video ID.'
+          isLoading.value = false
+          return false
+        }
+      }
+
+      // 2. Fallback to client-side regex extraction
+      const videoId = youtubeService.extractVideoId(urlOrId)
+      if (!videoId) {
+        errorMessage.value = 'Invalid YouTube URL or Video ID. Please check the link format.'
+        isLoading.value = false
+        return false
+      }
+
+      playerStore.pause()
+      currentVideoId.value = videoId
+      currentTitle.value = customTitle || `YouTube Stream (${videoId})`
+      currentChannel.value = 'YouTube Audio'
+      isPlaying.value = true
+
+      youtubeService.loadVideo(videoId)
+      audioEngine.setExternalSourceState(true, playerStore.volume, playerStore.isMuted)
+      urlInput.value = ''
+      isLoading.value = false
+      checkIfBookmarked()
+      return true
+    } catch (err: any) {
+      console.warn('[YouTubeStore] playUrl error:', err)
+      errorMessage.value = err?.message || 'Failed to process YouTube link.'
+      isLoading.value = false
+      return false
+    }
+  }
+
+  function handlePlayerError(code: number, message: string): void {
+    console.warn(`[YouTubeStore] Player error received (${code}): ${message}`)
+    errorMessage.value = message
+    isPlaying.value = false
+    isLoading.value = false
+  }
+
+  function togglePlayPause(): void {
+    if (isPlaying.value) {
+      youtubeService.pauseVideo()
+      isPlaying.value = false
+    } else {
+      youtubeService.playVideo()
+      isPlaying.value = true
+    }
   }
 
   function toggleDisplayMode(): void {
@@ -105,11 +171,17 @@ export const useYouTubeStore = defineStore('youtube', () => {
     await storageService.saveYouTubeBookmarks(bookmarks.value)
   }
 
+  function clearError(): void {
+    errorMessage.value = null
+  }
+
   return {
     currentVideoId,
     currentTitle,
     currentChannel,
     isPlaying,
+    isLoading,
+    errorMessage,
     displayMode,
     bookmarks,
     urlInput,
@@ -117,8 +189,11 @@ export const useYouTubeStore = defineStore('youtube', () => {
     initBookmarks,
     playPreset,
     playUrl,
+    handlePlayerError,
+    togglePlayPause,
     toggleDisplayMode,
     toggleBookmark,
-    deleteBookmark
+    deleteBookmark,
+    clearError
   }
 })
