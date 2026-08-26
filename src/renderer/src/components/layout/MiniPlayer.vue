@@ -16,12 +16,14 @@ import {
   Radio,
   BarChart3,
   Disc,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { usePlayerStore } from '../../stores/player'
 import { useTimerStore } from '../../stores/timer'
 import { useYouTubeStore } from '../../stores/youtube'
+import { useQuotaStore } from '../../stores/quota'
 import { youtubeService } from '../../services/youtubeService'
 import { audioEngine } from '../../services/audioEngine'
 import AnalogVuMeter from '../visualizers/AnalogVuMeter.vue'
@@ -33,6 +35,7 @@ const appStore = useAppStore()
 const playerStore = usePlayerStore()
 const timerStore = useTimerStore()
 const ytStore = useYouTubeStore()
+const quotaStore = useQuotaStore()
 
 const currentMiniView = ref<'music' | 'vu' | 'timer'>('music')
 const focusPresets = [25, 45, 60]
@@ -62,6 +65,11 @@ function togglePlayPause(): void {
   }
 }
 
+async function openQuotaModal(): Promise<void> {
+  await handleExpand()
+  quotaStore.isModalOpen = true
+}
+
 async function handleExpand(): Promise<void> {
   appStore.isMiniPlayer = false
   if (window.api?.exitMiniMode) {
@@ -86,9 +94,23 @@ async function handleClose(): Promise<void> {
   <div class="w-full h-full bg-lofi-bg text-lofi-text flex flex-col justify-between p-3 select-none overflow-hidden border border-lofi-border rounded-2xl shadow-2xl relative font-sans">
     <!-- Mini Drag Header -->
     <div class="h-6 w-full flex items-center justify-between drag-region pb-1 border-b border-lofi-border/50">
-      <div class="flex items-center gap-1 text-2xs font-bold text-lofi-primary">
-        <Music class="w-3 h-3" />
+      <div class="flex items-center gap-1.5 text-2xs font-bold text-lofi-primary">
         <span class="tracking-wider uppercase font-bold text-[10px]">Lofi</span>
+        <button
+          @click="openQuotaModal"
+          class="no-drag flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono border transition-all"
+          :class="[
+            quotaStore.statusColor === 'green'
+              ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+              : quotaStore.statusColor === 'amber'
+              ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+              : 'text-rose-400 bg-rose-500/10 border-rose-500/30 animate-pulse'
+          ]"
+          :title="`Codex Quota: ${quotaStore.usedPercentage}% Used (Resets in ${quotaStore.formattedCountdown}) - Click to configure`"
+        >
+          <Zap class="w-2.5 h-2.5" />
+          <span>{{ quotaStore.usedPercentage }}%</span>
+        </button>
       </div>
 
       <!-- Center: 3-Mode View Switcher (Music / VU / Timer) -->

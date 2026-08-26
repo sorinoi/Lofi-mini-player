@@ -22,7 +22,12 @@ export const api = {
   openAudioFolder: (): Promise<string[]> => ipcRenderer.invoke('dialog:openAudioFolder'),
   openAndParseAudioFiles: (): Promise<any[]> => ipcRenderer.invoke('dialog:openAndParseAudioFiles'),
   openAndParseAudioFolder: (): Promise<any[]> => ipcRenderer.invoke('dialog:openAndParseAudioFolder'),
-  parseFilePaths: (filePaths: string[]): Promise<any[]> => ipcRenderer.invoke('metadata:parseFilePaths', filePaths)
+  parseFilePaths: (filePaths: string[]): Promise<any[]> => ipcRenderer.invoke('metadata:parseFilePaths', filePaths),
+
+  // Codex / AI Subscription Rate Limit & Quota Monitor
+  fetchQuotaUsage: (payload: { provider: string; token?: string; customUrl?: string }): Promise<any> =>
+    ipcRenderer.invoke('quota:fetchUsage', payload),
+  detectLocalCodex: (): Promise<any> => ipcRenderer.invoke('quota:detectLocalCodex')
 }
 
 export type IElectronAPI = typeof api

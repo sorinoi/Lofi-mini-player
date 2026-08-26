@@ -4,6 +4,10 @@ import { readdirSync, statSync } from 'fs'
 import { createHash } from 'crypto'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as mm from 'music-metadata'
+import { detectLocalCodexQuota } from './codexDetector'
+import { fetchGitHubCopilotQuota } from './githubCopilotDetector'
+import { fetchOpenAIQuota } from './openAIDetector'
+import { fetchZhipuQuota } from './zhipuDetector'
 
 let mainWindow: BrowserWindow | null = null
 let normalBounds: Rectangle = { x: 100, y: 100, width: 1040, height: 720 }
@@ -230,6 +234,145 @@ ipcMain.handle('dialog:openAndParseAudioFolder', async () => {
 
 ipcMain.handle('metadata:parseFilePaths', async (_, filePaths: string[]) => {
   return await Promise.all(filePaths.map((fp) => parseTrackMetadata(fp)))
+})
+
+// IPC Handler: Codex / AI Subscription Rate Limit & Quota Monitor
+ipcMain.handle('quota:detectLocalCodex', async () => {
+  return detectLocalCodexQuota()
+})
+
+ipcMain.handle('quota:fetchUsage', async (_, payload: { provider: string; token?: string; customUrl?: string }) => {
+  const { provider, token, customUrl } = payload || {}
+
+  // 1. Local Codex CLI Direct Auto-Detection Mode
+  if (provider === 'local_codex' || provider === 'codex_cli' || (!provider && !token)) {
+    const localCodex = detectLocalCodexQuota()
+    if (localCodex.isLocalCliDetected) {
+      return localCodex
+    }
+  }
+
+  // 2. Demo Simulation Mode
+  if (provider === 'demo' || !token || token.trim() === '') {
+    const now = Date.now()
+    const windowMs = 3 * 60 * 60 * 1000 // Standard 3-hour Codex/GPT window
+    const currentWindowStart = Math.floor(now / windowMs) * windowMs
+    const resetTimestamp = currentWindowStart + windowMs
+    const elapsedMs = now - currentWindowStart
+    const usedFraction = (elapsedMs / windowMs) * 0.7 + 0.15
+    const usedPercentage = Math.round(Math.min(100, Math.max(0, usedFraction * 100)))
+    const totalRequests = 80
+    const remainingRequests = Math.round(totalRequests * (1 - usedPercentage / 100))
+
+    const minsLeft = Math.max(1, Math.round((resetTimestamp - now) / 60000))
+    const hours = Math.floor(minsLeft / 60)
+    const mins = minsLeft % 60
+    const resetTimeText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+
+    return {
+      success: true,
+      provider: 'demo',
+      usedPercentage,
+      remainingRequests,
+      totalRequests,
+      resetTimeText,
+      resetTimestamp,
+      statusMessage: 'Demo Simulation Active',
+      lastUpdated: now
+    }
+  }
+
+  try {
+    let url = 'https://api.openai.com/v1/models'
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${token.trim()}`,
+      'User-Agent': 'LofiPlayer-CodexMonitor/1.0'
+    }
+
+    if (provider === 'copilot') {
+      return await fetchGitHubCopilotQuota(token || '')
+    }
+
+    if (provider === 'openai_api') {
+      return await fetchOpenAIQuota(token || '')
+    }
+
+    if (provider === 'zhipu' || provider === 'glm') {
+      return await fetchZhipuQuota(token || '')
+    }
+
+    if (provider === 'custom' && customUrl) {
+      url = customUrl
+    } else if (provider === 'codex_subscription') {
+      if (!token.startsWith('sk-')) {
+        url = 'https://chatgpt.com/backend-api/models'
+      }
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    })
+
+    const remainingReqHeader = response.headers.get('x-ratelimit-remaining-requests')
+    const limitReqHeader = response.headers.get('x-ratelimit-limit-requests')
+    const resetReqHeader = response.headers.get('x-ratelimit-reset-requests')
+    const remainingTokHeader = response.headers.get('x-ratelimit-remaining-tokens')
+    const limitTokHeader = response.headers.get('x-ratelimit-limit-tokens')
+
+    const now = Date.now()
+
+    if (response.ok || remainingReqHeader) {
+      const remainingReq = remainingReqHeader ? parseInt(remainingReqHeader, 10) : 45
+      const totalReq = limitReqHeader ? parseInt(limitReqHeader, 10) : 80
+      const usedPct = Math.min(100, Math.max(0, Math.round(((totalReq - remainingReq) / (totalReq || 1)) * 100)))
+
+      let resetTimeText = '3h 00m'
+      let resetTimestamp = now + 3 * 3600 * 1000
+      if (resetReqHeader) {
+        resetTimeText = resetReqHeader
+      }
+
+      return {
+        success: true,
+        provider,
+        usedPercentage: usedPct,
+        remainingRequests: remainingReq,
+        totalRequests: totalReq,
+        remainingTokens: remainingTokHeader ? parseInt(remainingTokHeader, 10) : undefined,
+        totalTokens: limitTokHeader ? parseInt(limitTokHeader, 10) : undefined,
+        resetTimeText,
+        resetTimestamp,
+        statusMessage: 'Connected & Synced',
+        lastUpdated: now
+      }
+    } else {
+      const errText = await response.text().catch(() => '')
+      return {
+        success: false,
+        provider,
+        usedPercentage: 0,
+        remainingRequests: 0,
+        totalRequests: 0,
+        resetTimeText: '--',
+        resetTimestamp: now,
+        statusMessage: `HTTP ${response.status}: ${response.statusText || errText || 'Unauthorized or invalid token'}`,
+        lastUpdated: now
+      }
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      provider,
+      usedPercentage: 0,
+      remainingRequests: 0,
+      totalRequests: 0,
+      resetTimeText: '--',
+      resetTimestamp: Date.now(),
+      statusMessage: err?.message || 'Connection failed',
+      lastUpdated: Date.now()
+    }
+  }
 })
 
 app.whenReady().then(() => {

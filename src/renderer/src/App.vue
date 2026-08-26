@@ -20,7 +20,8 @@ import {
   Timer,
   Moon,
   Target,
-  Keyboard
+  Keyboard,
+  Zap
 } from 'lucide-vue-next'
 import { useAppStore } from './stores/app'
 import { usePlayerStore } from './stores/player'
@@ -28,6 +29,7 @@ import { useLibraryStore } from './stores/library'
 import { useAmbientStore } from './stores/ambient'
 import { useTimerStore } from './stores/timer'
 import { useYouTubeStore } from './stores/youtube'
+import { useQuotaStore } from './stores/quota'
 import { youtubeService } from './services/youtubeService'
 import { audioEngine } from './services/audioEngine'
 import { setupKeyboardShortcuts } from './services/shortcutService'
@@ -38,6 +40,7 @@ import MusicLibrary from './components/library/MusicLibrary.vue'
 import AmbientMixer from './components/ambient/AmbientMixer.vue'
 import YouTubePlayer from './components/youtube/YouTubePlayer.vue'
 import TimerModal from './components/timers/TimerModal.vue'
+import QuotaModal from './components/quota/QuotaModal.vue'
 
 const appStore = useAppStore()
 const playerStore = usePlayerStore()
@@ -45,6 +48,7 @@ const libraryStore = useLibraryStore()
 const ambientStore = useAmbientStore()
 const timerStore = useTimerStore()
 const ytStore = useYouTubeStore()
+const quotaStore = useQuotaStore()
 
 const isTimerModalOpen = ref(false)
 const showShortcutsModal = ref(false)
@@ -84,6 +88,7 @@ async function handleSwitchToMini(): Promise<void> {
 
 onMounted(async () => {
   cleanupShortcuts = setupKeyboardShortcuts()
+  quotaStore.initQuota()
   await libraryStore.initLibrary()
   if (libraryStore.tracks.length > 0 && playerStore.playlist.length === 0) {
     playerStore.playlist = [...libraryStore.tracks]
@@ -218,6 +223,31 @@ onUnmounted(() => {
             >
               <Moon class="w-2.5 h-2.5" />
               {{ formatTime(timerStore.sleepSecondsLeft) }}
+            </span>
+          </button>
+
+          <!-- Codex / AI Subscription Rate Limit Trigger Button -->
+          <button
+            @click="quotaStore.isModalOpen = true"
+            class="w-full flex items-center justify-between py-2 px-2.5 rounded-xl bg-lofi-card hover:bg-lofi-border/60 text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm group"
+          >
+            <div class="flex items-center gap-2">
+              <Zap class="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span>AI Rate Limit</span>
+            </div>
+
+            <!-- Live Quota % Pill -->
+            <span
+              class="px-1.5 py-0.5 rounded-full text-2xs font-mono font-bold flex items-center gap-1 border"
+              :class="[
+                quotaStore.statusColor === 'green'
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                  : quotaStore.statusColor === 'amber'
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                  : 'bg-rose-500/20 text-rose-400 border-rose-500/30 animate-pulse'
+              ]"
+            >
+              {{ quotaStore.usedPercentage }}%
             </span>
           </button>
 
@@ -443,6 +473,9 @@ onUnmounted(() => {
       :is-open="isTimerModalOpen"
       @close="isTimerModalOpen = false"
     />
+
+    <!-- Codex / AI Subscription Rate Limit Monitor Modal -->
+    <QuotaModal />
 
     <!-- Keyboard Shortcuts Modal -->
     <div
