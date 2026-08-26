@@ -204,7 +204,7 @@ async function handleClose(): Promise<void> {
         <!-- Disc / Cover Art -->
         <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-lofi-card border border-lofi-border flex-shrink-0 flex items-center justify-center shadow-md">
           <img
-            v-if="ytStore.isPlaying && ytStore.currentVideoId"
+            v-if="(ytStore.isPlaying || appStore.activeTab === 'youtube') && ytStore.currentVideoId"
             :src="youtubeService.getThumbnailUrl(ytStore.currentVideoId)"
             alt="YouTube Thumb"
             class="w-full h-full object-cover"
@@ -221,10 +221,10 @@ async function handleClose(): Promise<void> {
         <!-- Info -->
         <div class="min-w-0 flex-1">
           <p class="text-xs font-bold text-lofi-text truncate">
-            {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack?.title || 'No Track Selected') }}
+            {{ (ytStore.isPlaying || appStore.activeTab === 'youtube') ? ytStore.currentTitle : (playerStore.currentTrack?.title || 'No Track Selected') }}
           </p>
           <p class="text-2xs text-lofi-muted truncate mt-0.5">
-            {{ ytStore.isPlaying ? ytStore.currentChannel : (playerStore.currentTrack?.artist || 'Lofi Chill Station') }}
+            {{ (ytStore.isPlaying || appStore.activeTab === 'youtube') ? ytStore.currentChannel : (playerStore.currentTrack?.artist || 'Lofi Chill Station') }}
           </p>
 
           <!-- Mini Progress Bar -->
@@ -329,7 +329,7 @@ async function handleClose(): Promise<void> {
               <Play v-else class="w-2.5 h-2.5 fill-current ml-0.2" />
             </button>
             <span class="truncate text-lofi-text font-medium">
-              {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack ? playerStore.currentTrack.title : 'Ready to play') }}
+              {{ (ytStore.isPlaying || appStore.activeTab === 'youtube') ? ytStore.currentTitle : (playerStore.currentTrack ? playerStore.currentTrack.title : 'Ready to play') }}
             </span>
           </div>
 
@@ -421,7 +421,7 @@ async function handleClose(): Promise<void> {
               <Play v-else class="w-2.5 h-2.5 fill-current ml-0.2" />
             </button>
             <span class="truncate text-lofi-muted">
-              {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack ? playerStore.currentTrack.title : 'Ready to play') }}
+              {{ (ytStore.isPlaying || appStore.activeTab === 'youtube') ? ytStore.currentTitle : (playerStore.currentTrack ? playerStore.currentTrack.title : 'Ready to play') }}
             </span>
           </div>
 

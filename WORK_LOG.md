@@ -39,13 +39,14 @@
 ## 📝 Activity & Changelog
 
 ### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
-- **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์และช่องสด
+- **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์, ช่องสด และการเล่นต่อเนื่องใน Mini Player Mode
 - **Details:**
-  - เพิ่ม `session.webRequest.onBeforeSendHeaders` แทรก `Referer` และ `Origin` ของ `https://www.youtube.com` ใน [src/main/index.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/index.ts) เพื่อแก้ไข YouTube Error 150/153 ถาวร
+  - เพิ่ม `session.webRequest.onBeforeSendHeaders` จัดการ `Referer` สำหรับ packaged app และ dev environment ป้องกัน YouTube Error 150/152/153
   - เพิ่ม `--autoplay-policy=no-user-gesture-required` ให้ Chromium เล่นเสียง/วิดีโออัตโนมัติ
   - พัฒนา [src/main/youtubeResolver.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/youtubeResolver.ts) รองรับการแกะ `videoId` จากทุกรูปแบบ (Watch, Shorts, Live, Embed, YouTu.be) รวมถึงช่องสด `@Channel/live` (เช่น `@LofiGirl/live`, `@ChillhopMusic/live`)
   - ดึง Metadata (Title, Channel Name, Thumbnail) ผ่าน YouTube oEmbed อัตโนมัติ
-  - ปรับปรุง [src/renderer/src/services/youtubeService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/youtubeService.ts) ป้องกันปัญหา DOM Node หาย และดักจับ `onError` (2, 5, 100, 101, 150)
+  - ปรับปรุง [src/renderer/src/services/youtubeService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/youtubeService.ts) ป้องกันปัญหา DOM Node หาย และดักจับ `onError` (2, 5, 100, 101, 150, 152)
+  - ปรับปรุง [App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) และ [YouTubePlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/youtube/YouTubePlayer.vue) โดยเปลี่ยนจาก `v-if`/`v-else` และ `display: none` มาเป็น Persistent DOM Mounting ด้วยคลาส `.invisible-player` ทำให้ออดิโอ YouTube เล่นต่อเนื่องแบบไม่มีสะดุดเมื่อย่อเป็น **Mini Player Mode** หรือเมื่อสลับแท็บ
   - อัปเดต Presets ใน `YOUTUBE_LOFI_PRESETS` เป็น Live Streams ปัจจุบัน
   - ซิงค์ระบบ Play/Pause ใน [MiniPlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/layout/MiniPlayer.vue), [App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) และ [shortcutService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/shortcutService.ts)
   - ผ่านการทดสอบ `npm run typecheck` และ `npm run build` สำเร็จ 100%

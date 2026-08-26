@@ -20,6 +20,7 @@
 - [x] [Phase 3 Completed] ปรับปรุง [src/renderer/src/components/layout/MiniPlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/layout/MiniPlayer.vue), [App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) และ [shortcutService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/services/shortcutService.ts) ให้ Play/Pause ซิงค์สมบูรณ์
 - [x] [Phase 3 Completed] ปรับปรุง CSP ใน [src/renderer/index.html](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/index.html)
 - [x] [Phase 3 Completed] แก้ไข Error 152: ปรับแต่ง `onBeforeSendHeaders` ไม่ให้ spoof `Origin`/`Referer` ในโหมด Dev และใช้ `host: 'https://www.youtube-nocookie.com'`
+- [x] [Phase 3 Completed] แก้ไข YouTube หยุดเล่นเมื่อเข้า Mini Player Mode: ใช้ Persistent DOM Mounting (.invisible-player) เพื่อไม่ให้ Vue ทำลาย iframe และไม่ให้ Chromium ตัดเสียง
 - [x] [Phase 3 Completed] รัน `npm run typecheck` และ `npm run build` ผ่าน 100% (0 errors)
 
 ---

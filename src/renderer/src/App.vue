@@ -105,15 +105,24 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Mini Player Mode View -->
-  <div v-if="appStore.isMiniPlayer" class="w-screen h-screen overflow-hidden bg-lofi-bg">
-    <MiniPlayer />
-  </div>
+  <div class="w-screen h-screen overflow-hidden bg-lofi-bg relative select-none font-sans">
+    <!-- Mini Player Mode View (Active Overlay) -->
+    <div
+      v-show="appStore.isMiniPlayer"
+      class="w-full h-full absolute inset-0 z-50 bg-lofi-bg overflow-hidden"
+    >
+      <MiniPlayer />
+    </div>
 
-  <!-- Full Desktop Experience Mode View -->
-  <div v-else class="flex flex-col h-screen w-screen bg-lofi-bg text-lofi-text select-none overflow-hidden font-sans">
-    <!-- Custom Frameless Titlebar -->
-    <CustomTitlebar />
+    <!-- Full Desktop Experience Mode View (Preserved in DOM to maintain continuous YouTube playback) -->
+    <div
+      :class="[
+        'w-full h-full flex flex-col bg-lofi-bg text-lofi-text overflow-hidden',
+        appStore.isMiniPlayer ? 'invisible-player' : 'relative z-10'
+      ]"
+    >
+      <!-- Custom Frameless Titlebar -->
+      <CustomTitlebar />
 
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar Navigation -->
@@ -323,8 +332,13 @@ onUnmounted(() => {
           <AmbientMixer />
         </div>
 
-        <!-- Tab 4: YouTube Stream Player -->
-        <div v-show="appStore.activeTab === 'youtube'" class="flex-1 overflow-hidden z-10">
+        <!-- Tab 4: YouTube Stream Player (Always mounted in DOM to prevent audio interruption) -->
+        <div
+          :class="[
+            'flex-1 overflow-hidden z-10',
+            appStore.activeTab === 'youtube' ? 'w-full h-full' : 'invisible-player'
+          ]"
+        >
           <YouTubePlayer />
         </div>
 
@@ -469,6 +483,7 @@ onUnmounted(() => {
         </footer>
       </main>
     </div>
+  </div>
 
     <!-- Focus / Sleep Timer Modal -->
     <TimerModal
@@ -528,5 +543,16 @@ onUnmounted(() => {
 <style scoped>
 .text-2xs {
   font-size: 0.68rem;
+}
+
+.invisible-player {
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  width: 1040px !important;
+  height: 720px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: visible !important;
 }
 </style>

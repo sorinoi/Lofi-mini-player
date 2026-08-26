@@ -182,10 +182,12 @@ onUnmounted(() => {
 
       <!-- Display Area: 16:9 Video Embed OR Visualizer (Using v-show to prevent reload) -->
       <div class="w-full relative rounded-2xl overflow-hidden bg-black/60 border border-lofi-border flex items-center justify-center min-h-[360px] aspect-video">
-        <!-- 1. Video Mode Container (Protected with Non-Destructive Wrapper) -->
+        <!-- 1. Video Mode Container (Protected with Non-Destructive Wrapper & Off-screen Preservation) -->
         <div
-          v-show="ytStore.displayMode === 'video'"
-          class="w-full h-full absolute inset-0 flex items-center justify-center"
+          :class="[
+            'w-full h-full flex items-center justify-center',
+            ytStore.displayMode === 'video' ? 'absolute inset-0' : 'invisible-player'
+          ]"
         >
           <div id="youtube-player-element-wrapper" class="w-full h-full relative">
             <div id="youtube-player-element" class="w-full h-full"></div>
@@ -202,7 +204,10 @@ onUnmounted(() => {
         </div>
 
         <!-- 2. VU Visualizer Mode -->
-        <div v-show="ytStore.displayMode === 'visualizer'" class="w-full h-full p-4 flex items-center justify-center bg-lofi-bg/90">
+        <div
+          v-if="ytStore.displayMode === 'visualizer'"
+          class="w-full h-full p-4 flex items-center justify-center bg-lofi-bg/90"
+        >
           <VisualizerContainer />
         </div>
       </div>
@@ -287,6 +292,17 @@ onUnmounted(() => {
 <style scoped>
 .text-2xs {
   font-size: 0.68rem;
+}
+
+.invisible-player {
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: visible !important;
 }
 
 @keyframes fadeIn {
