@@ -1,0 +1,21 @@
+appId: com.lofiplayer.desktop
+productName: Lofi Player
+directories:
+  output: dist
+files:
+  - out/**/*
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  executableName: LofiPlayer
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Lofi Player
