@@ -5,8 +5,8 @@
 ---
 
 ## 🎯 Active Task Pointer
-- **Current Task:** YouTube Stream Playback & URL Resolver Fix (`youtube_stream_fix`)
-- **Task File:** [task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md)
+- **Current Task:** Clean Removal of AI Rate Limit & Quota Monitor (`remove_ai_rate_limit`)
+- **Task File:** [task/remove_ai_rate_limit_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/remove_ai_rate_limit_task.md)
 - **Current Status:** All Phases Completed & Verified 🟢
 
 ---
@@ -33,10 +33,23 @@
 - [x] **Packaging & Distribution:** Build `.exe` installer & Complete `README.md` ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
 - [x] **Sub-Feature 2:** Subscription Codex & AI Rate Limit / Quota Monitor ([task/rate_limit_monitor_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/rate_limit_monitor_task.md))
 - [x] **Sub-Feature 3:** YouTube Stream Playback & Live URL Resolver Fix ([task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md))
+- [x] **Feature Removal:** Clean Removal of AI Rate Limit & Quota Monitor ([task/remove_ai_rate_limit_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/remove_ai_rate_limit_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-08-27] - Task 4: Clean Removal of AI Rate Limit & Quota Monitor
+- **Task:** ดำเนินการถอดถอนฟีเจอร์ AI Rate Limit Bar และ Quota Monitor ออกจากโค้ดเบสทั้งหมดอย่างสะอาดและสมบูรณ์
+- **Details:**
+  - ลบไฟล์ Backend Detectors: `codexDetector.ts`, `githubCopilotDetector.ts`, `openAIDetector.ts`, `zhipuDetector.ts`
+  - ลบ IPC Handlers `quota:detectLocalCodex` และ `quota:fetchUsage` ใน `src/main/index.ts`
+  - ลบ Preload ContextBridge APIs ใน `src/preload/index.ts`
+  - ลบ Pinia Store `src/renderer/src/stores/quota.ts`
+  - ลบคอมโพเนนต์ `src/renderer/src/components/quota/QuotaModal.vue` และโฟลเดอร์ `quota/`
+  - ลบ Quota Badge และไอคอน Zap ใน `CustomTitlebar.vue`, `MiniPlayer.vue` และ `App.vue`
+  - อัปเดต `README.md` ตัด Section 8 ออก
+  - ผ่านการทดสอบ `npm run typecheck` (Node + Web) และ `npm run build` สำเร็จ 100% (0 errors)
 
 ### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
 - **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์, ช่องสด และการเล่นต่อเนื่องใน Mini Player Mode

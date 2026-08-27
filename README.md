@@ -65,12 +65,6 @@
 - แถบควบคุมเสียงด้านล่างคุมระดับเสียงภาพรวมของทุกแหล่งเสียง (Local Music, Ambient Synthesizer, และ YouTube)
 - ปุ่ม **Master Mute** ตัดเสียงเงียบสนิท 100% ระดับ Chromium Native Audio Engine
 
-### ⚡ 8. Codex & AI Subscription Rate Limit / Quota Monitor (สำหรับนักพัฒนา & สายโปรดักทีฟ)
-- ตรวจสอบโควต้าและอัตราการใช้งาน AI Subscription (เช่น **Codex / ChatGPT Plus & Team**, **OpenAI API**, **GitHub Copilot**, หรือ Custom Endpoint)
-- **Live Indicator Badge:** แสดงผล % การใช้งานแบบ Real-time พร้อมเวลานับถอยหลัง Reset รอบถัดไป บน Titlebar, Sidebar และ Mini-Player
-- **Interactive Quota Dashboard:** หน้าต่างแดชบอร์ดสรุปสถิติอย่างละเอียด (จำนวนคำขอที่เหลือ, กราฟิก Progress Bar หลากสีตามสถานะ เขียว/ส้ม/แดง, ปุ่ม Test Connection และ Auto-refresh ทุก 3 นาที)
-- ปลอดภัย 100%: บันทึก Token ลงในเครื่องเฉพาะบุคคล (Local Only) ไม่มีการส่งออกภายนอก
-
 ---
 
 ## ⌨️ Keyboard Shortcuts (คีย์ลัด)
