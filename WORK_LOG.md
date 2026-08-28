@@ -38,6 +38,12 @@
 
 ## 📝 Activity & Changelog
 
+### [2026-08-27] - Fix: Automated Electron Binary Installer & Postinstall Auto-Repair
+- **Task:** ป้องกันปัญหา `Error: Electron uninstall` / Missing executable binary เมื่อรัน `npm install` ใหม่
+- **Details:**
+  - สร้าง [scripts/ensure-electron.js](file:///d:/Source/github/sorinoi/Lofi-mini-player/scripts/ensure-electron.js) สำหรับตรวจสอบสถานะของ Electron binary อัตโนมัติ หากพบว่ายังไม่ได้ extract หรือขาด `path.txt` ระบบจะทำการแตกไฟล์จาก Cache ด้วย `tar` / `PowerShell` และสร้าง `path.txt` ให้ทันที
+  - ผูกสคริปต์เข้ากับ `postinstall` ใน [package.json](file:///d:/Source/github/sorinoi/Lofi-mini-player/package.json) ทำให้เมื่อรัน `npm install` หรือ `git pull` แล้ว install ใหม่ ระบบจะซ่อมแซมและเตรียมความพร้อมให้อัตโนมัติ 100%
+
 ### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
 - **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์, ช่องสด และการเล่นต่อเนื่องใน Mini Player Mode
 - **Details:**
