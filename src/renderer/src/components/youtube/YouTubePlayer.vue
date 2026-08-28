@@ -51,6 +51,7 @@ async function mountYouTubePlayer(): Promise<void> {
       ytStore.currentVideoId,
       playerStore.volume,
       playerStore.isMuted,
+      false,
       (state: number) => {
         // 1: PLAYING, 2: PAUSED, 0: ENDED, 3: BUFFERING
         if (state === 1) {
@@ -77,8 +78,10 @@ async function mountYouTubePlayer(): Promise<void> {
 
 watch(
   () => ytStore.currentVideoId,
-  (newId) => {
-    youtubeService.loadVideo(newId)
+  (newId, oldId) => {
+    if (oldId && newId !== oldId) {
+      youtubeService.loadVideo(newId)
+    }
   }
 )
 
@@ -343,7 +346,7 @@ onUnmounted(() => {
           @click="ytStore.playPreset(station)"
           :class="[
             'p-3 rounded-2xl border transition-all flex items-center gap-3.5 cursor-pointer group backdrop-blur-sm',
-            ytStore.currentVideoId === station.videoId
+            ytStore.isPlaying && ytStore.currentVideoId === station.videoId
               ? 'bg-lofi-card border-lofi-pink/60 ring-1 ring-lofi-pink/30 shadow-lg'
               : 'bg-lofi-surface/50 border-lofi-border hover:bg-lofi-card/80 hover:border-lofi-border/80'
           ]"
@@ -361,7 +364,12 @@ onUnmounted(() => {
 
           <!-- Station Metadata -->
           <div class="min-w-0 flex-1">
-            <h4 class="text-xs font-bold text-lofi-text truncate group-hover:text-lofi-pink transition-colors">
+            <h4
+              :class="[
+                'text-xs font-bold truncate transition-colors',
+                ytStore.isPlaying && ytStore.currentVideoId === station.videoId ? 'text-lofi-pink' : 'text-lofi-text group-hover:text-lofi-pink'
+              ]"
+            >
               {{ station.title }}
             </h4>
             <p class="text-2xs text-lofi-muted truncate mt-0.5">{{ station.channel }}</p>
@@ -385,7 +393,12 @@ onUnmounted(() => {
           v-for="bm in ytStore.bookmarks"
           :key="bm.id"
           @click="ytStore.playUrl(bm.videoId, bm.title)"
-          class="p-2.5 rounded-xl bg-lofi-surface/40 hover:bg-lofi-card border border-lofi-border flex items-center justify-between gap-3 cursor-pointer group transition-all"
+          :class="[
+            'p-2.5 rounded-xl border flex items-center justify-between gap-3 cursor-pointer group transition-all',
+            ytStore.isPlaying && ytStore.currentVideoId === bm.videoId
+              ? 'bg-lofi-card border-lofi-primary/60 ring-1 ring-lofi-primary/30 shadow-lg'
+              : 'bg-lofi-surface/40 hover:bg-lofi-card border-lofi-border'
+          ]"
         >
           <div class="flex items-center gap-2.5 min-w-0">
             <img :src="bm.thumbnailUrl" class="w-12 h-9 rounded-lg object-cover flex-shrink-0 border border-lofi-border" />

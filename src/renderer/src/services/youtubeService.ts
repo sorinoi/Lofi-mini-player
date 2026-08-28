@@ -150,6 +150,7 @@ class YouTubeService {
     videoId: string,
     initialVolume: number,
     initialMuted: boolean,
+    autoPlay: boolean = false,
     onStateChange?: (state: number) => void,
     onError?: (code: number, message: string) => void
   ): Promise<any> {
@@ -188,7 +189,7 @@ class YouTubeService {
           width: '100%',
           height: '100%',
           playerVars: {
-            autoplay: 1,
+            autoplay: autoPlay ? 1 : 0,
             controls: 1,
             enablejsapi: 1,
             rel: 0,
@@ -209,12 +210,18 @@ class YouTubeService {
                   event.target.setVolume(Math.round(initialVolume * 100))
                 } catch {}
               }
-              try {
-                event.target.playVideo()
-              } catch {}
 
-              this.isPlayingState = true
-              audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
+              if (autoPlay) {
+                try {
+                  event.target.playVideo()
+                } catch {}
+                this.isPlayingState = true
+                audioEngine.setExternalSourceState(true, this.currentVolume, this.isCurrentMuted)
+              } else {
+                this.isPlayingState = false
+                audioEngine.setExternalSourceState(false, this.currentVolume, this.isCurrentMuted)
+              }
+
               resolve(this.player)
             },
             onStateChange: (event: any) => {
@@ -332,7 +339,8 @@ class YouTubeService {
       this.currentElementId,
       videoId,
       this.currentVolume,
-      this.isCurrentMuted
+      this.isCurrentMuted,
+      true
     )
   }
 

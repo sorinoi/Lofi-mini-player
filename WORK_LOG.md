@@ -6,7 +6,7 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md)
+- **Task File:** [task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md)
 - **Current Status:** 🟢 Completed & Ready (Version 1.1.0 Setup Installer Ready)
 
 ---
@@ -43,10 +43,23 @@
 - [x] **Feature Addition:** To-Do App with JSON Database & Timestamps ([task/todo_app_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_app_task.md))
 - [x] **Feature Addition:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
 - [x] **Feature Addition:** Note Record with JSON Database & Timestamps ([task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md))
+- [x] **Bug Fix:** Disable YouTube Autoplay on App Startup ([task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-08-28] - Task 14: Disable YouTube Autoplay on App Startup
+- **Plan Document:** [planning/youtube_autoplay_fix.md](file:///d:/Source/github/sorinoi/lofi-player/planning/youtube_autoplay_fix.md)
+- **Task Tracker:** [task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md)
+- **Task Summary:** ปรับปรุงระบบ YouTube Player ไม่ให้เล่นเพลงหรือสตรีมสดรายการแรกใน Curated List โดยอัตโนมัติเมื่อเปิดโปรแกรม โดยจะเล่นต่อเมื่อผู้ใช้กดคลิกเลือกรายการด้วยตนเองเท่านั้น
+- **Details:**
+  - เพิ่มพารามิเตอร์ `autoPlay: boolean = false` ในฟังก์ชัน `createPlayer` ใน [src/renderer/src/services/youtubeService.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/services/youtubeService.ts)
+  - ปรับค่า `playerVars.autoplay = autoPlay ? 1 : 0` และใน `onReady` hook จะไม่สั่ง `event.target.playVideo()` หรือเปิดการทำงานของ `audioEngine` หาก `autoPlay` เป็น `false`
+  - ปรับปรุง [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) ใน `mountYouTubePlayer()` ให้ส่ง `autoPlay = false` ขณะเริ่มต้น Mount
+  - ปรับเงื่อนไข Active Card Highlight ของ Curated Stations และ Bookmarks ให้ตรวจสอบ `ytStore.isPlaying && ytStore.currentVideoId === station.videoId` เพื่อไม่ให้แสดงกรอบกำลังเล่นก่อนที่ผู้ใช้จะคลิก
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` และ Packaging สำเร็จ 100%
 
 ### [2026-08-28] - Task 13: Note Record with JSON Database & Timestamps
 - **Plan Document:** [planning/note_record.md](file:///d:/Source/github/sorinoi/lofi-player/planning/note_record.md)
