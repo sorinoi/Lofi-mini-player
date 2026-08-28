@@ -16,13 +16,16 @@ import {
   Coffee,
   Sparkles,
   ArrowUpDown,
-  FileJson
+  FileJson,
+  PanelRight
 } from 'lucide-vue-next'
 import { useTodoStore } from '../../stores/todo'
+import { useAppStore } from '../../stores/app'
 import type { TodoPriority, TodoCategory } from '../../types/todo'
 import TodoItemCard from './TodoItemCard.vue'
 
 const todoStore = useTodoStore()
+const appStore = useAppStore()
 
 const newText = ref('')
 const newPriority = ref<TodoPriority>('medium')
@@ -43,6 +46,10 @@ async function handleAddTodo(): Promise<void> {
   isExpandedInput.value = false
 }
 
+async function handleDockSidebar(): Promise<void> {
+  await appStore.enterDockMode()
+}
+
 onMounted(() => {
   todoStore.initTodos()
 })
@@ -50,7 +57,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full h-full flex flex-col p-6 overflow-y-auto max-w-6xl mx-auto space-y-6 select-none">
-    <!-- Header Section (Title, Subtitle & Open JSON Database Button) -->
+    <!-- Header Section (Title, Subtitle & Action Buttons) -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
         <h2 class="text-2xl font-bold text-lofi-text flex items-center gap-2.5">
@@ -64,15 +71,26 @@ onMounted(() => {
         </p>
       </div>
 
-      <!-- Action Button: Open JSON Database Folder -->
-      <button
-        @click="todoStore.openStorageFolder"
-        class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-lofi-surface/80 hover:bg-lofi-card text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm active:scale-95 cursor-pointer group"
-        title="Open todos.json file location on disk for backup or manual editing"
-      >
-        <FileJson class="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-        <span>Open JSON File</span>
-      </button>
+      <!-- Action Buttons: Dock Sidebar & Open JSON Database Folder -->
+      <div class="flex items-center gap-2">
+        <button
+          @click="handleDockSidebar"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-all shadow-sm active:scale-95 cursor-pointer group"
+          title="Dock tasks to the right side of the screen (Alt+D)"
+        >
+          <PanelRight class="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+          <span>Dock to Right Side</span>
+        </button>
+
+        <button
+          @click="todoStore.openStorageFolder"
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-lofi-surface/80 hover:bg-lofi-card text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm active:scale-95 cursor-pointer group"
+          title="Open todos.json file location on disk for backup or manual editing"
+        >
+          <FileJson class="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+          <span>Open JSON File</span>
+        </button>
+      </div>
     </div>
 
     <!-- Quick Stats Cards Bar -->

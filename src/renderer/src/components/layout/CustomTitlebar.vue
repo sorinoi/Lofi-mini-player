@@ -9,7 +9,8 @@ import {
   PinOff,
   Maximize2,
   Music,
-  Activity
+  Activity,
+  PanelRight
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { usePlayerStore } from '../../stores/player'
@@ -47,12 +48,19 @@ async function handleTogglePin(): Promise<void> {
 }
 
 async function handleToggleMini(): Promise<void> {
-  appStore.toggleMiniPlayer()
+  await appStore.toggleMiniPlayer()
   if (appStore.isMiniPlayer) {
-    if (window.api?.enterMiniMode) await window.api.enterMiniMode()
     isPinned.value = true
   } else {
-    if (window.api?.exitMiniMode) await window.api.exitMiniMode()
+    isPinned.value = false
+  }
+}
+
+async function handleToggleDock(): Promise<void> {
+  await appStore.toggleDockMode()
+  if (appStore.isDockMode) {
+    isPinned.value = true
+  } else {
     isPinned.value = false
   }
 }
@@ -98,6 +106,15 @@ onMounted(async () => {
       >
         <Pin v-if="isPinned" class="w-3 h-3" />
         <PinOff v-else class="w-3 h-3" />
+      </button>
+
+      <!-- Dock Sidebar Mode Toggle -->
+      <button
+        @click="handleToggleDock"
+        class="p-1.5 rounded-md hover:text-emerald-400 hover:bg-lofi-card transition-colors"
+        title="Dock Sidebar Mode (Alt+D)"
+      >
+        <PanelRight class="w-3 h-3" />
       </button>
 
       <!-- Mini Player Mode Toggle -->

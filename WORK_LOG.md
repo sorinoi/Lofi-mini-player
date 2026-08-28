@@ -5,9 +5,9 @@
 ---
 
 ## 🎯 Active Task Pointer
-- **Current Task:** Right Sidebar Dock Mode (`dock_sidebar_mode`)
-- **Task File:** [task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md)
-- **Current Status:** Planning & Design Phase (🟡 Pending Approval)
+- **Current Task:** None (All planned tasks completed)
+- **Task File:** [task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md)
+- **Current Status:** 🟢 Completed & Ready (Version 1.1.0 Setup Installer Ready)
 
 ---
 
@@ -41,11 +41,26 @@
 - [x] **Bug Fix:** YouTube Fullscreen & Cinema Mode Tab Overlap Fix ([task/cinema_fullscreen_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/cinema_fullscreen_fix_task.md))
 - [x] **Release 1.1.0:** Version Bump to 1.1.0 & Windows Build
 - [x] **Feature Addition:** To-Do App with JSON Database & Timestamps ([task/todo_app_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_app_task.md))
-- [ ] **Upcoming Feature:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
+- [x] **Feature Addition:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
+- [x] **Feature Addition:** Note Record with JSON Database & Timestamps ([task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-08-28] - Task 13: Note Record with JSON Database & Timestamps
+- **Plan Document:** [planning/note_record.md](file:///d:/Source/github/sorinoi/lofi-player/planning/note_record.md)
+- **Task Tracker:** [task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md)
+- **Task Summary:** พัฒนาระบบ **Note Record** สำหรับบันทึกข้อความสั้น/บันทึกช่วยจำ จัดเก็บลงไฟล์ JSON (`notes.json`) บันทึกวันที่สร้างและวันที่แก้ไข รองรับการสร้าง แก้ไข ลบ (CRUD), ปักหมุดโน้ต, เลือกสีการ์ด (Color Tags), เชื่อมต่อกับเมนูหลักและ Right Sidebar Dock Mode
+- **Details:**
+  - สร้างโมดูล [src/main/noteStorage.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/noteStorage.ts) จัดการ I/O ไฟล์ `notes.json` ใน `app.getPath('userData')` แบบ Atomic Write และลงทะเบียน IPC Handlers (`notes:load`, `notes:save`, `notes:openFolder`) ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts)
+  - เพิ่ม Preload ContextBridge APIs (`loadNotes`, `saveNotes`, `openNotesFolder`) ใน [src/preload/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/preload/index.ts)
+  - ประกาศ Type Definitions ใน [src/renderer/src/types/note.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/types/note.ts) และสร้าง Pinia Store ใน [src/renderer/src/stores/note.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/note.ts) รองรับ Full CRUD, ค้นหาแบบ Real-time, กรองสีการ์ด และจัดเรียง
+  - สร้าง UI Components [NoteItemCard.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteItemCard.vue) (การ์ดโน้ตสไตล์ Cozy พร้อมปุ่ม Pin, Edit, Delete, Copy, Timestamp) และ [NoteView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteView.vue) (หน้าต่างจัดการโน้ตเต็มจอ พร้อมแถบสถิติ, Quick Add Card, Search & Filter Toolbar, Grid)
+  - เพิ่มแท็บ **Note Record** ใน Sidebar Navigation ของ [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) พร้อม Badge แสดงจำนวนโน้ตทั้งหมด
+  - เพิ่มแท็บสลับ `[Tasks] / [Notes]` ในแถบ [DockSidebar.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/DockSidebar.vue) ให้จดโน้ตได้ทันทีในโหมด Right Sidebar Dock
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.1.0.exe`** เรียบร้อย
 
 ### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
 - **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์, ช่องสด และการเล่นต่อเนื่องใน Mini Player Mode
@@ -87,29 +102,20 @@
   - อัปเดต `README.md` ตัด Section 8 ออก
   - ผ่านการทดสอบ `npm run typecheck` (Node + Web) และ `npm run build` สำเร็จ 100% (0 errors)
 
-### [Planned / In Progress] - Task 12: Right Sidebar Dock Mode for To-Do & Music
+### [2026-08-28] - Task 12: Right Sidebar Dock Mode for To-Do & Music
 - **Plan Document:** [planning/dock_sidebar_mode.md](file:///d:/Source/github/sorinoi/lofi-player/planning/dock_sidebar_mode.md)
 - **Task Tracker:** [task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md)
-- **Task Summary:** พัฒนาระบบแถบข้างติดขอบจอขวา (Right Sidebar Dock Mode) ความกว้าง ~340px สูงเต็มจอ สำหรับเปิด To-Do List คู่กับตัวควบคุมเพลง Lofi และนาฬิกา Pomodoro ขณะทำงานบนหน้าจอฝั่งซ้าย
-- **Planned Work Breakdown (งานที่ต้องดำเนินการ):**
-  1. **Main Process Window Bounds & Multi-Monitor Calculation (`src/main/index.ts`):**
-     - คำนวณพิกัด `workArea` ของจอภาพปัจจุบันผ่าน Electron `screen` API
-     - กำหนด Bounds ความกว้าง 340px ความสูงเต็มจอขวา (`x = workArea.x + workArea.width - 340`, `y = workArea.y`)
-     - จัดการสลับ Always on Top และบันทึก/คืนค่า `normalBounds` เมื่อกดขยายกลับหน้าต่างปกติ
-  2. **Preload API Bindings (`src/preload/index.ts` & `src/preload/index.d.ts`):**
-     - Expose `enterDockMode`, `exitDockMode`, และ `toggleDockMode`
-  3. **App State Management (`src/renderer/src/stores/app.ts`):**
-     - เพิ่ม `isDockMode` state และฟังก์ชัน `toggleDockMode`
-  4. **Dedicated UI Component (`src/renderer/src/components/layout/DockSidebar.vue`):**
-     - Header: โลโก้, ปุ่ม Pin, ปุ่ม Expand `[⤢]`, ปุ่ม Minimize และ Close
-     - Compact Player: เล่น/หยุดเพลง, เลื่อนเพลง, ปรับเสียง และแสดงเวลานับถอยหลัง Pomodoro/Sleep Timer
-     - Full-Height Scrollable To-Do List: สถิติงาน, ช่องเพิ่มงานด่วน, ตัวกรองงาน, และรายการงานครบถ้วน
-     - Footer: ปุ่มกดขยายหน้าต่างแบบเต็มจอ
-  5. **Entry Points & App Layout Integration (`CustomTitlebar.vue`, `TodoView.vue`, `App.vue`):**
-     - เพิ่มปุ่ม `[📌 Dock Sidebar]` บน Titlebar และในหน้าต่าง To-Do
-     - เพิ่มคีย์ลัด <kbd>Alt</kbd> + <kbd>D</kbd>
-  6. **Verification & Build:**
-     - ตรวจสอบ `npm run typecheck` และคอมไพล์ Windows Installer ด้วย `npm run build:win`
+- **Task Summary:** พัฒนาระบบแถบข้างติดขอบจอขวา (Right Sidebar Dock Mode) ความกว้าง ~340px สูงเต็มจอ สำหรับเปิด Focus Tasks To-Do List (ส่วนบน) ควบคู่กับแผงควบคุมเพลง Lofi แบบ **Quad-View Mini-Player Widget** (ส่วนล่าง ~220px: Track / VU / Timer / Video)
+- **Details:**
+  - เพิ่มการคำนวณตำแหน่งจอภาพ `workArea` ผ่าน Electron `screen` API ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts) สำหรับแนบหน้าต่างชิดขอบขวาสุด (`x = workArea.x + workArea.width - 340`, `y = workArea.y`), ตั้ง Always on Top, และคืนค่า `normalBounds` ได้อย่างแม่นยำ 100%
+  - เพิ่ม Preload contextBridge APIs (`enterDockMode`, `exitDockMode`, `toggleDockMode`, `isDockMode`) ใน [src/preload/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/preload/index.ts)
+  - เพิ่ม `isDockMode`, `dockMiniPlayerView` และ Actions ใน Pinia store [src/renderer/src/stores/app.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/app.ts)
+  - สร้างคอมโพเนนต์ [DockSidebar.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/DockSidebar.vue) รวม Drag Titlebar, ตัวจัดการ To-Do เต็มจอ, และแผง Mini-Player ด้านล่างที่สลับได้ 4 มุมมอง (`Track`, `VU Meter`, `Focus Timer`, `YouTube Video Stream`)
+  - เพิ่มปุ่ม Dock Mode บน Titlebar ([CustomTitlebar.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/CustomTitlebar.vue)) และหน้า To-Do ([TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue))
+  - เพิ่มคีย์ลัดระดับสากล <kbd>Alt</kbd> + <kbd>D</kbd> ใน [shortcutService.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/services/shortcutService.ts)
+  - รองรับการแสดงผลวิดีโอแบบ Adaptive ในโหมด Dock ด้วย `.dock-video-fixed` ใน [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue)
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.1.0.exe`** เรียบร้อย
 
 ### [2026-08-28] - Task 11: To-Do App with JSON Database
 - **Task:** พัฒนาระบบ **Focus Tasks & To-Do** จัดเก็บข้อมูลในไฟล์ JSON บนเครื่องผู้ใช้ พร้อมบันทึกวันที่สร้างและวันที่เสร็จ

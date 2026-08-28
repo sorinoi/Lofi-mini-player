@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, Rectangle, session } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, Rectangle, session, screen } from 'electron'
 import { join, basename, extname } from 'path'
 import { readdirSync, statSync } from 'fs'
 import { createHash } from 'crypto'
@@ -6,6 +6,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as mm from 'music-metadata'
 import { resolveYouTubeUrl, fetchYouTubeMetadata } from './youtubeResolver'
 import { loadTodosFromFile, saveTodosToFile, openTodosFolder, TodoItem } from './todoStorage'
+import { loadNotesFromFile, saveNotesToFile, openNotesFolder, NoteItem } from './noteStorage'
 
 // Disable user gesture requirement for media autoplay in Chromium
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
@@ -14,6 +15,7 @@ let splashWindow: BrowserWindow | null = null
 let mainWindow: BrowserWindow | null = null
 let normalBounds: Rectangle = { x: 100, y: 100, width: 1040, height: 720 }
 let isAlwaysOnTopState = false
+let isDockModeState = false
 
 function createSplashWindow(): void {
   splashWindow = new BrowserWindow({
@@ -196,11 +198,61 @@ ipcMain.handle('window:toggleAlwaysOnTop', () => {
   return isAlwaysOnTopState
 })
 
-ipcMain.handle('window:enterMiniMode', () => {
+function enterDockMode(): boolean {
   if (mainWindow) {
-    if (!mainWindow.isMaximized()) {
+    if (!isDockModeState && !mainWindow.isMaximized()) {
       normalBounds = mainWindow.getBounds()
     }
+    const currentBounds = mainWindow.getBounds()
+    const display = screen.getDisplayNearestPoint({
+      x: currentBounds.x + currentBounds.width / 2,
+      y: currentBounds.y + currentBounds.height / 2
+    })
+    const { workArea } = display
+    const DOCK_WIDTH = 340
+
+    mainWindow.setBounds({
+      x: Math.round(workArea.x + workArea.width - DOCK_WIDTH),
+      y: Math.round(workArea.y),
+      width: DOCK_WIDTH,
+      height: Math.round(workArea.height)
+    })
+    mainWindow.setAlwaysOnTop(true)
+    isAlwaysOnTopState = true
+    isDockModeState = true
+  }
+  return true
+}
+
+function exitDockMode(): boolean {
+  if (mainWindow) {
+    isDockModeState = false
+    mainWindow.setBounds({
+      x: normalBounds.x,
+      y: normalBounds.y,
+      width: normalBounds.width || 1040,
+      height: normalBounds.height || 720
+    })
+    mainWindow.setAlwaysOnTop(false)
+    isAlwaysOnTopState = false
+  }
+  return false
+}
+
+function toggleDockMode(): boolean {
+  if (isDockModeState) {
+    return exitDockMode()
+  } else {
+    return enterDockMode()
+  }
+}
+
+ipcMain.handle('window:enterMiniMode', () => {
+  if (mainWindow) {
+    if (!isDockModeState && !mainWindow.isMaximized()) {
+      normalBounds = mainWindow.getBounds()
+    }
+    isDockModeState = false
     mainWindow.setSize(360, 220)
     mainWindow.setAlwaysOnTop(true)
     isAlwaysOnTopState = true
@@ -210,12 +262,29 @@ ipcMain.handle('window:enterMiniMode', () => {
 
 ipcMain.handle('window:exitMiniMode', () => {
   if (mainWindow) {
+    isDockModeState = false
     mainWindow.setSize(normalBounds.width || 1040, normalBounds.height || 720)
     mainWindow.center()
     mainWindow.setAlwaysOnTop(false)
     isAlwaysOnTopState = false
   }
   return false
+})
+
+ipcMain.handle('window:enterDockMode', () => {
+  return enterDockMode()
+})
+
+ipcMain.handle('window:exitDockMode', () => {
+  return exitDockMode()
+})
+
+ipcMain.handle('window:toggleDockMode', () => {
+  return toggleDockMode()
+})
+
+ipcMain.handle('window:isDockMode', () => {
+  return isDockModeState
 })
 
 // IPC Handlers for Audio File & Folder Import + Metadata Parsing
@@ -280,6 +349,19 @@ ipcMain.handle('todos:save', async (_, todos: TodoItem[]) => {
 
 ipcMain.handle('todos:openFolder', async () => {
   openTodosFolder()
+})
+
+// IPC Handlers for JSON-based Note Record / Quick Notes
+ipcMain.handle('notes:load', async () => {
+  return loadNotesFromFile()
+})
+
+ipcMain.handle('notes:save', async (_, notes: NoteItem[]) => {
+  return saveNotesToFile(notes)
+})
+
+ipcMain.handle('notes:openFolder', async () => {
+  openNotesFolder()
 })
 
 app.whenReady().then(() => {

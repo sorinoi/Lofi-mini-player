@@ -22,7 +22,8 @@ import {
   Target,
   Keyboard,
   Tv,
-  CheckSquare
+  CheckSquare,
+  StickyNote
 } from 'lucide-vue-next'
 import { useAppStore } from './stores/app'
 import { usePlayerStore } from './stores/player'
@@ -31,16 +32,19 @@ import { useAmbientStore } from './stores/ambient'
 import { useTimerStore } from './stores/timer'
 import { useYouTubeStore } from './stores/youtube'
 import { useTodoStore } from './stores/todo'
+import { useNoteStore } from './stores/note'
 import { youtubeService } from './services/youtubeService'
 import { audioEngine } from './services/audioEngine'
 import { setupKeyboardShortcuts } from './services/shortcutService'
 import CustomTitlebar from './components/layout/CustomTitlebar.vue'
 import MiniPlayer from './components/layout/MiniPlayer.vue'
+import DockSidebar from './components/layout/DockSidebar.vue'
 import VisualizerContainer from './components/visualizers/VisualizerContainer.vue'
 import MusicLibrary from './components/library/MusicLibrary.vue'
 import AmbientMixer from './components/ambient/AmbientMixer.vue'
 import YouTubePlayer from './components/youtube/YouTubePlayer.vue'
 import TodoView from './components/todo/TodoView.vue'
+import NoteView from './components/notes/NoteView.vue'
 import TimerModal from './components/timers/TimerModal.vue'
 
 const appStore = useAppStore()
@@ -50,6 +54,7 @@ const ambientStore = useAmbientStore()
 const timerStore = useTimerStore()
 const ytStore = useYouTubeStore()
 const todoStore = useTodoStore()
+const noteStore = useNoteStore()
 
 const isTimerModalOpen = ref(false)
 const showShortcutsModal = ref(false)
@@ -88,16 +93,14 @@ async function handleSidebarImport(): Promise<void> {
 }
 
 async function handleSwitchToMini(): Promise<void> {
-  appStore.isMiniPlayer = true
-  if (window.api?.enterMiniMode) {
-    await window.api.enterMiniMode()
-  }
+  await appStore.toggleMiniPlayer()
 }
 
 onMounted(async () => {
   cleanupShortcuts = setupKeyboardShortcuts()
   await libraryStore.initLibrary()
   await todoStore.initTodos()
+  await noteStore.initNotes()
   if (libraryStore.tracks.length > 0 && playerStore.playlist.length === 0) {
     playerStore.playlist = [...libraryStore.tracks]
   }
@@ -123,15 +126,25 @@ onUnmounted(() => {
       <MiniPlayer />
     </div>
 
+    <!-- Right Sidebar Dock Mode View (Active Overlay) -->
+    <div
+      v-show="appStore.isDockMode"
+      class="w-full h-full absolute inset-0 z-50 overflow-hidden"
+    >
+      <DockSidebar />
+    </div>
+
     <!-- YouTube Stream Player (Persistent DOM, positioned adaptively) -->
     <div
       :class="[
         'overflow-hidden',
-        ytStore.isCinemaMode && !appStore.isMiniPlayer
+        ytStore.isCinemaMode && !appStore.isMiniPlayer && !appStore.isDockMode
           ? 'cinema-video-fullscreen'
           : appStore.isMiniPlayer && appStore.miniPlayerView === 'video'
           ? 'mini-video-fixed'
-          : appStore.isMiniPlayer
+          : appStore.isDockMode && appStore.dockMiniPlayerView === 'video'
+          ? 'dock-video-fixed'
+          : appStore.isMiniPlayer || appStore.isDockMode
           ? 'invisible-player'
           : appStore.activeTab === 'youtube'
           ? 'desktop-youtube-active'
@@ -145,7 +158,7 @@ onUnmounted(() => {
     <div
       :class="[
         'w-full h-full flex flex-col bg-lofi-bg text-lofi-text overflow-hidden',
-        appStore.isMiniPlayer ? 'invisible-player' : 'relative z-10'
+        appStore.isMiniPlayer || appStore.isDockMode ? 'invisible-player' : 'relative z-10'
       ]"
     >
       <!-- Custom Frameless Titlebar -->
@@ -248,6 +261,25 @@ onUnmounted(() => {
                 class="ml-auto px-1.5 py-0.2 text-2xs bg-emerald-500/20 text-emerald-300 rounded-full font-bold border border-emerald-500/30"
               >
                 {{ todoStore.pendingCount }}
+              </span>
+            </button>
+
+            <button
+              @click="appStore.setActiveTab('notes')"
+              :class="[
+                'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all',
+                appStore.activeTab === 'notes'
+                  ? 'bg-lofi-card text-amber-400 border border-lofi-border font-semibold shadow-sm'
+                  : 'text-lofi-muted hover:text-lofi-text hover:bg-lofi-surface/60'
+              ]"
+            >
+              <StickyNote class="w-4 h-4 text-amber-400" />
+              <span>Note Record</span>
+              <span
+                v-if="noteStore.totalCount > 0"
+                class="ml-auto px-1.5 py-0.2 text-2xs bg-amber-500/20 text-amber-300 rounded-full font-bold border border-amber-500/30"
+              >
+                {{ noteStore.totalCount }}
               </span>
             </button>
           </nav>
@@ -371,6 +403,11 @@ onUnmounted(() => {
         <!-- Tab 5: To-Do / Focus Task Manager -->
         <div v-show="appStore.activeTab === 'todo'" class="flex-1 overflow-hidden z-10 flex flex-col">
           <TodoView />
+        </div>
+
+        <!-- Tab 6: Note Record & Quick Memos -->
+        <div v-show="appStore.activeTab === 'notes'" class="flex-1 overflow-hidden z-10 flex flex-col">
+          <NoteView />
         </div>
 
         <!-- Bottom Audio Player Control Bar -->
@@ -607,6 +644,21 @@ onUnmounted(() => {
   width: 100vw !important;
   height: 100vh !important;
   z-index: 20 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+  background-color: #000 !important;
+}
+
+.dock-video-fixed {
+  position: absolute !important;
+  left: 10px !important;
+  right: 10px !important;
+  bottom: 10px !important;
+  height: 112px !important;
+  border-radius: 12px !important;
+  z-index: 35 !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   visibility: visible !important;

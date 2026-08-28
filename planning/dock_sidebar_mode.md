@@ -2,24 +2,26 @@
 
 ## 1. User Intent & Problem Statement
 - **User Request:**
-  > "Ask: สามารถกำหนดการแสดงผลของ application เช่น ชิดขวาของหน้าจอคอมพิวเตอร์ โดยแสดงผลเป็น แถบเล็ก ๆ เพื่อแสดงรายการ todo-list ได้หรือไม่"
-  > "ช่วยวิเคราะห์และเขียนแผนให้หน่อยครับ"
+  > "สามารถกำหนดการแสดงผลของ application เช่น ชิดขวาของหน้าจอคอมพิวเตอร์ โดยแสดงผลเป็น แถบเล็ก ๆ เพื่อแสดงรายการ todo-list ได้หรือไม่"
+  > "ช่วยปรับแผนหน่อยครับ ผมอยากให้ส่วนล่างสุดแสดงเป็นหน้าจอคล้าย ๆ กับตอนกด mini player mode ด้วย"
 - **Goal:**
-  พัฒนาระบบ **"Right Sidebar Dock Mode" (โหมดแถบข้างติดขอบจอขวา)** ให้ Lofi Player สามารถย่อและตรึงหน้าต่างเป็นแถบแนวตั้ง Slim Sidebar (ความกว้าง ~340px สูงเต็มจอแนวตั้ง) แนบชิดขอบขวาของจอคอมพิวเตอร์แบบ Always on Top เพื่อให้ผู้ใช้สามารถดูและจัดการ To-Do List พร้อมฟังเพลง Lofi ในขณะที่ใช้พื้นที่จอฝั่งซ้ายทำงานอื่น (เช่น เขียนโค้ด, พิมพ์งาน, ท่องเว็บ) ได้อย่างราบรื่น
+  พัฒนาระบบ **"Right Sidebar Dock Mode" (โหมดแถบข้างติดขอบจอขวา)** ความกว้าง ~340px สูงเต็มจอแนวตั้ง แนบชิดขอบขวาของจอคอมพิวเตอร์แบบ Always on Top โดยจัดวางเลย์เอาต์ 2 ส่วนหลัก:
+  1. **พื้นที่ส่วนบน (Flex-1):** ระบบจัดการ **Focus Tasks & To-Do List** แบบ Full-Height Scrollable (เพิ่มงานด่วน, ตัวกรอง, เช็คสถานะ)
+  2. **พื้นที่ส่วนล่าง (~220px):** แผงควบคุม **Dock Mini-Player Widget** แบบ Quad-View (คล้ายกับ Mini-Player Mode) สลับได้ 4 โหมด: `[Track]`, `[VU]`, `[Timer]`, และ `[Video]`
 
 ---
 
-## 2. Technical Architecture & Calculations
+## 2. Technical Architecture & Window Calculations
 
-### 1. Window Positioning in Electron Main Process (`screen` API)
-- ดึงข้อมูลความละเอียดและพื้นที่ใช้งานจริงของจอภาพปัจจุบัน (Multi-monitor Aware):
+### 1. Window Positioning in Electron Main Process (`src/main/index.ts`)
+- ตรวจจับหน้าจอปัจจุบันและคำนวณพิกัดชิดขอบขวา (Multi-monitor Aware):
   ```typescript
   const currentBounds = mainWindow.getBounds()
   const display = screen.getDisplayNearestPoint({
     x: currentBounds.x + currentBounds.width / 2,
     y: currentBounds.y + currentBounds.height / 2
   })
-  const { workArea } = display // เว้นขอบ Windows Taskbar ให้อัตโนมัติ
+  const { workArea } = display // เว้นขอบ Windows Taskbar อัตโนมัติ
   const DOCK_WIDTH = 340
 
   // คำนวณพิกัดชิดขอบขวาสุด
@@ -28,39 +30,65 @@
   const width = DOCK_WIDTH
   const height = workArea.height
   ```
-- บันทึก `normalBounds` ก่อนเข้าสู่ Dock Mode เพื่อคืนค่าตำแหน่งเดิมได้อย่างแม่นยำ 100% เมื่อกดขยายกลับเป็นหน้าต่างปกติ
+- จดจำและบันทึก `normalBounds` เพื่อคืนค่าขนาดและตำแหน่งหน้าต่างเดิมได้สมบูรณ์ 100% เมื่อออกจาก Dock Mode
 
-### 2. IPC Channels & Preload Bridge
-- `window:enterDockMode`: คำนวณพิกัดชิดขอบขวา, ปรับขนาดหน้าต่าง และเปิด `setAlwaysOnTop(true)`
-- `window:exitDockMode`: คืนค่าขนาดและพิกัดเดิมจาก `normalBounds`
-- `window:toggleDockMode`: สลับสถานะระหว่างหน้าต่างปกติกับ Sidebar Dock Mode
+### 2. IPC Channels & Preload API
+- `window:enterDockMode`: ปรับ Bounds ชิดขอบจอขวา และตั้งค่า `setAlwaysOnTop(true)`
+- `window:exitDockMode`: คืนค่า Bounds ปกติ และตั้งค่า `setAlwaysOnTop(false)`
+- `window:toggleDockMode`: สลับสถานะเข้า/ออกจาก Dock Mode
 
-### 3. State Management in `stores/app.ts`
-- `isDockMode = ref<boolean>(false)`
-- `toggleDockMode()`
+### 3. State Management (`src/renderer/src/stores/app.ts`)
+- เพิ่ม State:
+  - `isDockMode = ref<boolean>(false)`
+  - `dockMiniPlayerView = ref<'music' | 'vu' | 'timer' | 'video'>('music')`
+- เพิ่ม Actions:
+  - `toggleDockMode()`
+  - `setDockMiniPlayerView(view)`
 
 ### 4. Dedicated UI Component (`src/renderer/src/components/layout/DockSidebar.vue`)
-- **Header Section (Titlebar `h-9`):**
-  - โลโก้ Lofi Player & ชื่อโหมด `Focus Dock`
-  - ปุ่ม Pin Always on Top
-  - ปุ่ม `[⤢ Expand]` ขยายกลับสู่หน้าต่างปกติ
-  - ปุ่ม Minimize & Close
-- **Compact Music & Timer Controller:**
-  - แสดงสถานะเพลงที่กำลังเล่น (Local Audio / YouTube Stream)
-  - ปุ่ม Play/Pause, Next Track, Volume Bar
-  - ตัวเลขนับถอยหลัง Pomodoro Focus / Sleep Timer แบบเรียลไทม์
-- **To-Do Stream (ความสูงยืดหยุ่น เลื่อนได้แบบอิสระ):**
-  - การ์ดสรุปจำนวนงาน: `Active (X)` • `Completed (Y)`
-  - ช่อง **Quick Add Task** พร้อมปุ่มเลือกความสำคัญ (🔴 🟡 🟢) และหมวดหมู่ (💼 📚 🌿 ☕)
-  - แถบสลับตัวกรอง `All`, `Active`, `Done`
-  - รายการงานแบบกระชับ (Compact Task Rows) พร้อม Checkbox, ขีดฆ่า, Badge หมวดหมู่, และวันที่สร้าง/วันที่เสร็จ
-- **Bottom Toolbar:**
-  - ปุ่มขยายกลับหน้าต่างปกติ
-  - ปุ่มเปิดดูไฟล์ฐานข้อมูล JSON (`todos.json`)
+
+```
+┌──────────────────────────────────────────────┐
+│  🎵 Lofi Dock         [📌] [⤢] [-] [✕]      │  <-- Header (~36px)
+├──────────────────────────────────────────────┤
+│  📝 Focus Tasks (Active: 3 / Done: 5)        │
+│  [ + Add a new task...                ]      │
+│  [All] [Active] [Done]                       │
+│  ┌────────────────────────────────────────┐  │
+│  │ ☑ Fix YouTube Stream API   [Work] 🔴   │  │  <-- Scrollable To-Do Stream
+│  │ ☐ Design Dock Sidebar UI   [Dev]  🟡   │  │      (Flex-1, Full-Height)
+│  │ ☐ Drink Water & Stretch    [Chill]🟢   │  │
+│  │ ...                                    │  │
+│  └────────────────────────────────────────┘  │
+├──────────────────────────────────────────────┤
+│  [ Track ]  [ VU ]  [ ⏱ 24:59 ]  [ Video ]   │  <-- Quad-View Switcher Tabs
+├──────────────────────────────────────────────┤
+│  [Mini Cover]  Lofi Hip Hop Chill Station    │
+│  ⏮   ▶⏸   ⏭   |  🔊 ━━━━━●━━━━  (70%)    │  <-- Dynamic Bottom Mini-Player
+│  01:24 ━━━━━━━━━━━━━━━━━━━━━ 03:45           │      (~220px Fixed)
+│  (รองรับ 4 Views: Track / VU / Timer / Video) │
+└──────────────────────────────────────────────┘
+```
+
+#### รายละเอียดคอมโพเนนต์ย่อยใน Dock Mini-Player Widget:
+1. **View 1: Track View:**
+   - ปกอัลบั้ม / YouTube Thumbnail + ชื่อเพลง / ศิลปิน
+   - ปุ่มควบคุม Play/Pause, Skip Back/Forward
+   - Progress bar + Master Volume slider
+2. **View 2: VU Visualizer View:**
+   - Canvas แสดงผล Visualizer 4 สไตล์ (Analog VU Meter, Frequency Bars, Circular Pulse, Pixel Wave) พร้อมปุ่มคลิกสลับสไตล์
+   - แถบควบคุมเสียงด่วนด้านล่าง
+3. **View 3: Focus Timer View:**
+   - ปุ่มลัดปรับเวลา Pomodoro (25m / 45m / 60m) + จำนวน Sessions ที่สำเร็จ
+   - ตัวเลขนับถอยหลังดิจิทัลขนาดใหญ่ + ปุ่ม Start/Pause/Reset
+4. **View 4: Live YouTube Video View:**
+   - กรอบสตรีมวิดีโอ YouTube สดแบบปรับขนาดอัตโนมัติ
+   - Floating Ghost Timer Overlay (ตัวเลขนับถอยหลังลอยโปร่งแสงกึ่งกลางวิดีโอ)
+   - แถบควบคุมมินิมอล HUD ด้านล่าง
 
 ---
 
-## 3. Trigger & Entry Points
-1. **Titlebar Action Button:** เพิ่มปุ่ม **`[📌 Dock Sidebar]`** (ไอคอน `PanelRight`) ที่มุมขวาบนของแถบ CustomTitlebar
-2. **To-Do Tab Action Button:** เพิ่มปุ่ม **`[📌 Dock to Screen Side]`** ในหน้าจอ Focus Tasks (TodoView)
-3. **Keyboard Shortcut:** กด <kbd>Alt</kbd> + <kbd>D</kbd> หรือ <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> เพื่อสลับเข้า/ออกจาก Dock Mode ทันที
+## 3. Entry Points & Shortcut Integration
+1. **Titlebar Button:** เพิ่มปุ่ม `[📌 Dock Sidebar]` ใน `CustomTitlebar.vue`
+2. **To-Do Page Button:** เพิ่มปุ่ม `[📌 Dock to Right Side]` ใน `TodoView.vue`
+3. **Global / In-App Keyboard Shortcut:** <kbd>Alt</kbd> + <kbd>D</kbd> สำหรับเปิด/ปิดโหมด Dock ทันที

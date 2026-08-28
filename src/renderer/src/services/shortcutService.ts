@@ -1,11 +1,13 @@
 import { usePlayerStore } from '../stores/player'
 import { useYouTubeStore } from '../stores/youtube'
+import { useAppStore } from '../stores/app'
 import { youtubeService } from './youtubeService'
 import { audioEngine } from './audioEngine'
 
 export function setupKeyboardShortcuts(): () => void {
   const playerStore = usePlayerStore()
   const ytStore = useYouTubeStore()
+  const appStore = useAppStore()
 
   function togglePlayPause(): void {
     if (ytStore.isPlaying) {
@@ -18,7 +20,14 @@ export function setupKeyboardShortcuts(): () => void {
   }
 
   function handleKeyDown(e: KeyboardEvent): void {
-    // Ignore keystrokes when the user is actively typing in form inputs
+    // Check Alt+D globally for Dock Sidebar toggle
+    if (e.altKey && e.code === 'KeyD') {
+      e.preventDefault()
+      appStore.toggleDockMode()
+      return
+    }
+
+    // Ignore other keystrokes when the user is actively typing in form inputs
     const target = e.target as HTMLElement | null
     if (
       target &&

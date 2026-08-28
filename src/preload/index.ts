@@ -15,6 +15,10 @@ export const api = {
   setWindowTitle: (title: string): Promise<string> => ipcRenderer.invoke('window:setTitle', title),
   enterMiniMode: (): Promise<boolean> => ipcRenderer.invoke('window:enterMiniMode'),
   exitMiniMode: (): Promise<boolean> => ipcRenderer.invoke('window:exitMiniMode'),
+  enterDockMode: (): Promise<boolean> => ipcRenderer.invoke('window:enterDockMode'),
+  exitDockMode: (): Promise<boolean> => ipcRenderer.invoke('window:exitDockMode'),
+  toggleDockMode: (): Promise<boolean> => ipcRenderer.invoke('window:toggleDockMode'),
+  isDockMode: (): Promise<boolean> => ipcRenderer.invoke('window:isDockMode'),
   setWindowSize: (width: number, height: number): Promise<void> => ipcRenderer.invoke('window:setSize', width, height),
 
   // File Picker Dialogs & Audio Metadata Parsing
@@ -31,7 +35,12 @@ export const api = {
   // JSON-based To-Do / Focus Task Manager
   loadTodos: (): Promise<any[]> => ipcRenderer.invoke('todos:load'),
   saveTodos: (todos: any[]): Promise<boolean> => ipcRenderer.invoke('todos:save', todos),
-  openTodosFolder: (): Promise<void> => ipcRenderer.invoke('todos:openFolder')
+  openTodosFolder: (): Promise<void> => ipcRenderer.invoke('todos:openFolder'),
+
+  // JSON-based Note Record / Quick Notes
+  loadNotes: (): Promise<any[]> => ipcRenderer.invoke('notes:load'),
+  saveNotes: (notes: any[]): Promise<boolean> => ipcRenderer.invoke('notes:save', notes),
+  openNotesFolder: (): Promise<void> => ipcRenderer.invoke('notes:openFolder')
 }
 
 export type IElectronAPI = typeof api
