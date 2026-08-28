@@ -9,18 +9,15 @@ import {
   PinOff,
   Maximize2,
   Music,
-  Activity,
-  Zap
+  Activity
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { usePlayerStore } from '../../stores/player'
 import { useYouTubeStore } from '../../stores/youtube'
-import { useQuotaStore } from '../../stores/quota'
 
 const appStore = useAppStore()
 const playerStore = usePlayerStore()
 const ytStore = useYouTubeStore()
-const quotaStore = useQuotaStore()
 
 const isMaximized = ref(false)
 const isPinned = ref(false)
@@ -90,24 +87,6 @@ onMounted(async () => {
 
     <!-- Right: Window Action Buttons -->
     <div class="flex items-center gap-1.5 no-drag text-lofi-muted">
-      <!-- Quota Monitor Badge -->
-      <button
-        @click="quotaStore.isModalOpen = true"
-        :class="[
-          'px-2 py-0.5 rounded-full text-2xs font-mono font-semibold flex items-center gap-1 transition-all border shadow-sm',
-          quotaStore.statusColor === 'green'
-            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-            : quotaStore.statusColor === 'amber'
-            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
-            : 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20 animate-pulse'
-        ]"
-        title="Codex / AI Rate Limit Monitor (Click to configure)"
-      >
-        <Zap class="w-3 h-3 flex-shrink-0" />
-        <span>Codex: {{ quotaStore.usedPercentage }}%</span>
-        <span class="opacity-75 text-[10px] hidden md:inline">({{ quotaStore.formattedCountdown }})</span>
-      </button>
-
       <!-- Always on Top Toggle -->
       <button
         @click="handleTogglePin"

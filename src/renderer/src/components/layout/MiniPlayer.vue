@@ -17,13 +17,14 @@ import {
   BarChart3,
   Disc,
   Sparkles,
-  Zap
+  Tv,
+  Target,
+  Moon
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { usePlayerStore } from '../../stores/player'
 import { useTimerStore } from '../../stores/timer'
 import { useYouTubeStore } from '../../stores/youtube'
-import { useQuotaStore } from '../../stores/quota'
 import { youtubeService } from '../../services/youtubeService'
 import { audioEngine } from '../../services/audioEngine'
 import AnalogVuMeter from '../visualizers/AnalogVuMeter.vue'
@@ -35,9 +36,7 @@ const appStore = useAppStore()
 const playerStore = usePlayerStore()
 const timerStore = useTimerStore()
 const ytStore = useYouTubeStore()
-const quotaStore = useQuotaStore()
 
-const currentMiniView = ref<'music' | 'vu' | 'timer'>('music')
 const focusPresets = [25, 45, 60]
 
 const visualizerModes = ['analog_vu', 'frequency_bars', 'circular_pulse', 'pixel_wave'] as const
@@ -67,11 +66,6 @@ function togglePlayPause(): void {
   }
 }
 
-async function openQuotaModal(): Promise<void> {
-  await handleExpand()
-  quotaStore.isModalOpen = true
-}
-
 async function handleExpand(): Promise<void> {
   appStore.isMiniPlayer = false
   if (window.api?.exitMiniMode) {
@@ -93,36 +87,35 @@ async function handleClose(): Promise<void> {
 </script>
 
 <template>
-  <div class="w-full h-full bg-lofi-bg text-lofi-text flex flex-col justify-between p-3 select-none overflow-hidden border border-lofi-border rounded-2xl shadow-2xl relative font-sans">
+  <div
+    :class="[
+      'w-full h-full flex flex-col justify-between p-3 select-none overflow-hidden rounded-2xl shadow-2xl relative font-sans transition-colors',
+      appStore.miniPlayerView === 'video'
+        ? 'bg-transparent text-white'
+        : 'bg-lofi-bg text-lofi-text border border-lofi-border'
+    ]"
+  >
     <!-- Mini Drag Header -->
-    <div class="h-6 w-full flex items-center justify-between drag-region pb-1 border-b border-lofi-border/50">
+    <div
+      :class="[
+        'h-6 w-full flex items-center justify-between drag-region pb-1 z-30',
+        appStore.miniPlayerView === 'video'
+          ? 'bg-black/60 backdrop-blur-md px-2 -mx-1 rounded-lg border border-white/10'
+          : 'border-b border-lofi-border/50'
+      ]"
+    >
       <div class="flex items-center gap-1.5 text-2xs font-bold text-lofi-primary">
         <span class="tracking-wider uppercase font-bold text-[10px]">Lofi</span>
-        <button
-          @click="openQuotaModal"
-          class="no-drag flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono border transition-all"
-          :class="[
-            quotaStore.statusColor === 'green'
-              ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
-              : quotaStore.statusColor === 'amber'
-              ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
-              : 'text-rose-400 bg-rose-500/10 border-rose-500/30 animate-pulse'
-          ]"
-          :title="`Codex Quota: ${quotaStore.usedPercentage}% Used (Resets in ${quotaStore.formattedCountdown}) - Click to configure`"
-        >
-          <Zap class="w-2.5 h-2.5" />
-          <span>{{ quotaStore.usedPercentage }}%</span>
-        </button>
       </div>
 
-      <!-- Center: 3-Mode View Switcher (Music / VU / Timer) -->
+      <!-- Center: 4-Mode View Switcher (Music / VU / Timer / Video) -->
       <div class="no-drag flex items-center gap-0.5 bg-lofi-card/90 p-0.5 rounded-lg border border-lofi-border/70">
         <!-- 1. Music View -->
         <button
-          @click="currentMiniView = 'music'"
+          @click="appStore.setMiniPlayerView('music')"
           :class="[
-            'px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-all',
-            currentMiniView === 'music'
+            'px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-all',
+            appStore.miniPlayerView === 'music'
               ? 'bg-lofi-primary text-lofi-bg shadow-sm font-bold'
               : 'text-lofi-muted hover:text-lofi-text'
           ]"
@@ -134,10 +127,10 @@ async function handleClose(): Promise<void> {
 
         <!-- 2. VU Visualizer View -->
         <button
-          @click="currentMiniView = 'vu'"
+          @click="appStore.setMiniPlayerView('vu')"
           :class="[
-            'px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-all',
-            currentMiniView === 'vu'
+            'px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-all',
+            appStore.miniPlayerView === 'vu'
               ? 'bg-lofi-primary text-lofi-bg shadow-sm font-bold'
               : 'text-lofi-muted hover:text-lofi-text'
           ]"
@@ -149,10 +142,10 @@ async function handleClose(): Promise<void> {
 
         <!-- 3. Timer View -->
         <button
-          @click="currentMiniView = 'timer'"
+          @click="appStore.setMiniPlayerView('timer')"
           :class="[
-            'px-2 py-0.5 rounded text-[10px] font-mono font-semibold flex items-center gap-1 transition-all',
-            currentMiniView === 'timer'
+            'px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold flex items-center gap-1 transition-all',
+            appStore.miniPlayerView === 'timer'
               ? 'bg-lofi-primary text-lofi-bg shadow-sm font-bold'
               : timerStore.isPomodoroRunning
               ? 'text-lofi-primary animate-pulse'
@@ -166,6 +159,23 @@ async function handleClose(): Promise<void> {
           <span v-if="timerStore.isPomodoroRunning">{{ formatTime(timerStore.pomodoroSecondsLeft) }}</span>
           <span v-else-if="timerStore.isSleepTimerActive">{{ formatTime(timerStore.sleepSecondsLeft) }}</span>
           <span v-else>Timer</span>
+        </button>
+
+        <!-- 4. Video View -->
+        <button
+          @click="appStore.setMiniPlayerView('video')"
+          :class="[
+            'px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-all',
+            appStore.miniPlayerView === 'video'
+              ? 'bg-lofi-pink text-lofi-bg shadow-sm font-bold'
+              : ytStore.isPlaying
+              ? 'text-lofi-pink hover:text-white font-medium'
+              : 'text-lofi-muted hover:text-lofi-text'
+          ]"
+          title="Live YouTube Video Stream View"
+        >
+          <Tv class="w-2.5 h-2.5" />
+          <span>Video</span>
         </button>
       </div>
 
@@ -198,7 +208,7 @@ async function handleClose(): Promise<void> {
     </div>
 
     <!-- VIEW 1: MUSIC-CENTRIC VIEW -->
-    <template v-if="currentMiniView === 'music'">
+    <template v-if="appStore.miniPlayerView === 'music'">
       <!-- Center Track Content -->
       <div class="flex items-center gap-3 py-2 px-1">
         <!-- Disc / Cover Art -->
@@ -296,7 +306,7 @@ async function handleClose(): Promise<void> {
     </template>
 
     <!-- VIEW 2: VU VISUALIZER VIEW -->
-    <template v-else-if="currentMiniView === 'vu'">
+    <template v-else-if="appStore.miniPlayerView === 'vu'">
       <div class="flex-1 flex flex-col justify-between overflow-hidden py-1">
         <!-- Visualizer Canvas Container with Style Switcher -->
         <div class="w-full h-28 bg-lofi-card/60 rounded-xl border border-lofi-border/60 relative overflow-hidden flex items-center justify-center">
@@ -353,7 +363,7 @@ async function handleClose(): Promise<void> {
     </template>
 
     <!-- VIEW 3: FOCUS CLOCK WIDGET VIEW -->
-    <template v-else>
+    <template v-else-if="appStore.miniPlayerView === 'timer'">
       <div class="flex-1 flex flex-col justify-between py-1.5">
         <!-- Duration Presets & Mode -->
         <div class="flex items-center justify-between px-1">
@@ -438,6 +448,71 @@ async function handleClose(): Promise<void> {
               :value="playerStore.isMuted ? 0 : playerStore.volume"
               @input="(e) => playerStore.setVolume(Number((e.target as HTMLInputElement).value))"
               class="w-12 h-1 bg-lofi-card rounded-full appearance-none cursor-pointer accent-lofi-primary"
+            />
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- VIEW 4: LIVE YOUTUBE VIDEO STREAM VIEW -->
+    <template v-else-if="appStore.miniPlayerView === 'video'">
+      <div class="flex-1 flex flex-col justify-between overflow-hidden relative">
+        <!-- Floating Live Stream Title Pill -->
+        <div class="flex items-center gap-1.5 z-20 pointer-events-none mt-1">
+          <span class="px-1.5 py-0.5 rounded bg-red-600/90 text-white font-bold text-[8px] uppercase tracking-wider shadow-sm flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+            LIVE
+          </span>
+          <span class="text-[10px] font-semibold text-white drop-shadow-md truncate max-w-[200px]">
+            {{ ytStore.currentTitle }}
+          </span>
+        </div>
+
+        <!-- Floating Ghost Timer Overlay (Semi-transparent countdown when timer active) -->
+        <div
+          v-if="timerStore.isPomodoroRunning || timerStore.isSleepTimerActive"
+          class="absolute inset-0 flex items-center justify-center pointer-events-none z-15 select-none"
+        >
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-black/35 backdrop-blur-[2px] border border-white/10 shadow-2xl">
+            <Target v-if="timerStore.isPomodoroRunning" class="w-3.5 h-3.5 text-lofi-pink/70 animate-pulse" />
+            <Moon v-else-if="timerStore.isSleepTimerActive" class="w-3.5 h-3.5 text-lofi-purple/70 animate-pulse" />
+            <span class="font-mono text-xl font-bold tracking-widest text-white/50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {{ timerStore.isPomodoroRunning ? formatTime(timerStore.pomodoroSecondsLeft) : formatTime(timerStore.sleepSecondsLeft) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Transparent middle window space for video -->
+        <div class="flex-1 w-full"></div>
+
+        <!-- Bottom Minimal Video HUD -->
+        <div class="flex items-center justify-between p-1.5 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 text-[10px] z-20 shadow-lg">
+          <div class="flex items-center gap-2 truncate flex-1 mr-2">
+            <button
+              @click="togglePlayPause"
+              class="w-5 h-5 rounded-full bg-lofi-pink text-lofi-bg flex items-center justify-center hover:opacity-90 active:scale-95 flex-shrink-0 shadow-sm"
+            >
+              <Pause v-if="ytStore.isPlaying" class="w-2.5 h-2.5 fill-current" />
+              <Play v-else class="w-2.5 h-2.5 fill-current ml-0.2" />
+            </button>
+            <span class="truncate text-white/90 font-medium">
+              {{ ytStore.currentChannel || 'YouTube Live' }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button @click="playerStore.toggleMute" class="text-white/80 hover:text-white">
+              <VolumeX v-if="playerStore.isMuted || playerStore.volume === 0" class="w-3 h-3 text-red-400" />
+              <Volume2 v-else class="w-3 h-3" />
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              :value="playerStore.isMuted ? 0 : playerStore.volume"
+              @input="(e) => playerStore.setVolume(Number((e.target as HTMLInputElement).value))"
+              class="w-12 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-lofi-pink"
             />
           </div>
         </div>

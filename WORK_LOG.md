@@ -5,16 +5,16 @@
 ---
 
 ## 🎯 Active Task Pointer
-- **Current Task:** YouTube Stream Playback & URL Resolver Fix (`youtube_stream_fix`)
-- **Task File:** [task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md)
-- **Current Status:** All Phases Completed & Verified 🟢
+- **Current Task:** Right Sidebar Dock Mode (`dock_sidebar_mode`)
+- **Task File:** [task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md)
+- **Current Status:** Planning & Design Phase (🟡 Pending Approval)
 
 ---
 
 ## 📌 Project Overview & Goals
-- **Project:** Lofi Music Player Desktop App
+- **Project:** Lofi Music Player Desktop App (v1.1.0)
 - **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, electron-builder
-- **Status:** 🟢 Released (Installer & Documentation Ready)
+- **Status:** 🟢 Released (Version 1.1.0 Setup Installer Ready)
 
 ---
 
@@ -33,16 +33,19 @@
 - [x] **Packaging & Distribution:** Build `.exe` installer & Complete `README.md` ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
 - [x] **Sub-Feature 2:** Subscription Codex & AI Rate Limit / Quota Monitor ([task/rate_limit_monitor_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/rate_limit_monitor_task.md))
 - [x] **Sub-Feature 3:** YouTube Stream Playback & Live URL Resolver Fix ([task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md))
+- [x] **Feature Removal:** Clean Removal of AI Rate Limit & Quota Monitor ([task/remove_ai_rate_limit_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/remove_ai_rate_limit_task.md))
+- [x] **App Branding:** Custom App Icon Integration with `cga-lofi.ico` ([task/app_icon_customization_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/app_icon_customization_task.md))
+- [x] **UI/UX Enhancement:** Native Splash Screen with 3s Minimum Loading & Cozy Animations ([task/splash_screen_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/splash_screen_task.md))
+- [x] **Video Feature:** Dedicated YouTube Video Screen Mode & Quad-View Mini Player ([task/youtube_video_view_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_video_view_mode_task.md))
+- [x] **Sub-Feature 4:** Floating Ghost Timer Overlay in Video Mode ([task/floating_ghost_timer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/floating_ghost_timer_task.md))
+- [x] **Bug Fix:** YouTube Fullscreen & Cinema Mode Tab Overlap Fix ([task/cinema_fullscreen_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/cinema_fullscreen_fix_task.md))
+- [x] **Release 1.1.0:** Version Bump to 1.1.0 & Windows Build
+- [x] **Feature Addition:** To-Do App with JSON Database & Timestamps ([task/todo_app_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_app_task.md))
+- [ ] **Upcoming Feature:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
-
-### [2026-08-27] - Fix: Automated Electron Binary Installer & Postinstall Auto-Repair
-- **Task:** ป้องกันปัญหา `Error: Electron uninstall` / Missing executable binary เมื่อรัน `npm install` ใหม่
-- **Details:**
-  - สร้าง [scripts/ensure-electron.js](file:///d:/Source/github/sorinoi/Lofi-mini-player/scripts/ensure-electron.js) สำหรับตรวจสอบสถานะของ Electron binary อัตโนมัติ หากพบว่ายังไม่ได้ extract หรือขาด `path.txt` ระบบจะทำการแตกไฟล์จาก Cache ด้วย `tar` / `PowerShell` และสร้าง `path.txt` ให้ทันที
-  - ผูกสคริปต์เข้ากับ `postinstall` ใน [package.json](file:///d:/Source/github/sorinoi/Lofi-mini-player/package.json) ทำให้เมื่อรัน `npm install` หรือ `git pull` แล้ว install ใหม่ ระบบจะซ่อมแซมและเตรียมความพร้อมให้อัตโนมัติ 100%
 
 ### [2026-08-26] - Task 3: YouTube Stream Playback & Live Resolver Fix
 - **Task:** แก้ไขปัญหาการ Stream YouTube จากลิงก์, ช่องสด และการเล่นต่อเนื่องใน Mini Player Mode
@@ -64,3 +67,115 @@
   - ดึงข้อมูล Account Email (`sorinoi11@gmail.com`), Subscription Plan (`ChatGPT Plus`), Active Model (`cx/gpt-5.5` via `9Router`), และคำนวณโควต้า 3-Hour Rolling Window แบบ Real-time อัตโนมัติ โดยผู้ใช้**ไม่ต้องก๊อปปี้ Token มาใส่เองอีกต่อไป (Zero-Configuration)**
   - อัปเดตหน้าต่าง [QuotaModal.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/quota/QuotaModal.vue), Titlebar Badge, และ Mini-Player
   - ผ่านการทดสอบ `npm run typecheck` และคอมไพล์ Windows Installer `.exe` สำเร็จ 100% (0 errors)
+
+
+### [2026-08-27] - Fix: Automated Electron Binary Installer & Postinstall Auto-Repair
+- **Task:** ป้องกันปัญหา `Error: Electron uninstall` / Missing executable binary เมื่อรัน `npm install` ใหม่
+- **Details:**
+  - สร้าง [scripts/ensure-electron.js](file:///d:/Source/github/sorinoi/Lofi-mini-player/scripts/ensure-electron.js) สำหรับตรวจสอบสถานะของ Electron binary อัตโนมัติ หากพบว่ายังไม่ได้ extract หรือขาด `path.txt` ระบบจะทำการแตกไฟล์จาก Cache ด้วย `tar` / `PowerShell` และสร้าง `path.txt` ให้ทันที
+  - ผูกสคริปต์เข้ากับ `postinstall` ใน [package.json](file:///d:/Source/github/sorinoi/Lofi-mini-player/package.json) ทำให้เมื่อรัน `npm install` หรือ `git pull` แล้ว install ใหม่ ระบบจะซ่อมแซมและเตรียมความพร้อมให้อัตโนมัติ 100%
+
+  ### [2026-08-27] - Task 4: Clean Removal of AI Rate Limit & Quota Monitor
+- **Task:** ดำเนินการถอดถอนฟีเจอร์ AI Rate Limit Bar และ Quota Monitor ออกจากโค้ดเบสทั้งหมดอย่างสะอาดและสมบูรณ์
+- **Details:**
+  - ลบไฟล์ Backend Detectors: `codexDetector.ts`, `githubCopilotDetector.ts`, `openAIDetector.ts`, `zhipuDetector.ts`
+  - ลบ IPC Handlers `quota:detectLocalCodex` และ `quota:fetchUsage` ใน `src/main/index.ts`
+  - ลบ Preload ContextBridge APIs ใน `src/preload/index.ts`
+  - ลบ Pinia Store `src/renderer/src/stores/quota.ts`
+  - ลบคอมโพเนนต์ `src/renderer/src/components/quota/QuotaModal.vue` และโฟลเดอร์ `quota/`
+  - ลบ Quota Badge และไอคอน Zap ใน `CustomTitlebar.vue`, `MiniPlayer.vue` และ `App.vue`
+  - อัปเดต `README.md` ตัด Section 8 ออก
+  - ผ่านการทดสอบ `npm run typecheck` (Node + Web) และ `npm run build` สำเร็จ 100% (0 errors)
+
+### [Planned / In Progress] - Task 12: Right Sidebar Dock Mode for To-Do & Music
+- **Plan Document:** [planning/dock_sidebar_mode.md](file:///d:/Source/github/sorinoi/lofi-player/planning/dock_sidebar_mode.md)
+- **Task Tracker:** [task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md)
+- **Task Summary:** พัฒนาระบบแถบข้างติดขอบจอขวา (Right Sidebar Dock Mode) ความกว้าง ~340px สูงเต็มจอ สำหรับเปิด To-Do List คู่กับตัวควบคุมเพลง Lofi และนาฬิกา Pomodoro ขณะทำงานบนหน้าจอฝั่งซ้าย
+- **Planned Work Breakdown (งานที่ต้องดำเนินการ):**
+  1. **Main Process Window Bounds & Multi-Monitor Calculation (`src/main/index.ts`):**
+     - คำนวณพิกัด `workArea` ของจอภาพปัจจุบันผ่าน Electron `screen` API
+     - กำหนด Bounds ความกว้าง 340px ความสูงเต็มจอขวา (`x = workArea.x + workArea.width - 340`, `y = workArea.y`)
+     - จัดการสลับ Always on Top และบันทึก/คืนค่า `normalBounds` เมื่อกดขยายกลับหน้าต่างปกติ
+  2. **Preload API Bindings (`src/preload/index.ts` & `src/preload/index.d.ts`):**
+     - Expose `enterDockMode`, `exitDockMode`, และ `toggleDockMode`
+  3. **App State Management (`src/renderer/src/stores/app.ts`):**
+     - เพิ่ม `isDockMode` state และฟังก์ชัน `toggleDockMode`
+  4. **Dedicated UI Component (`src/renderer/src/components/layout/DockSidebar.vue`):**
+     - Header: โลโก้, ปุ่ม Pin, ปุ่ม Expand `[⤢]`, ปุ่ม Minimize และ Close
+     - Compact Player: เล่น/หยุดเพลง, เลื่อนเพลง, ปรับเสียง และแสดงเวลานับถอยหลัง Pomodoro/Sleep Timer
+     - Full-Height Scrollable To-Do List: สถิติงาน, ช่องเพิ่มงานด่วน, ตัวกรองงาน, และรายการงานครบถ้วน
+     - Footer: ปุ่มกดขยายหน้าต่างแบบเต็มจอ
+  5. **Entry Points & App Layout Integration (`CustomTitlebar.vue`, `TodoView.vue`, `App.vue`):**
+     - เพิ่มปุ่ม `[📌 Dock Sidebar]` บน Titlebar และในหน้าต่าง To-Do
+     - เพิ่มคีย์ลัด <kbd>Alt</kbd> + <kbd>D</kbd>
+  6. **Verification & Build:**
+     - ตรวจสอบ `npm run typecheck` และคอมไพล์ Windows Installer ด้วย `npm run build:win`
+
+### [2026-08-28] - Task 11: To-Do App with JSON Database
+- **Task:** พัฒนาระบบ **Focus Tasks & To-Do** จัดเก็บข้อมูลในไฟล์ JSON บนเครื่องผู้ใช้ พร้อมบันทึกวันที่สร้างและวันที่เสร็จ
+- **Details:**
+  - สร้างโมดูล [todoStorage.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/todoStorage.ts) ใน Main Process บันทึกและอ่านไฟล์ `todos.json` ใน `app.getPath('userData')` แบบ Atomic Write และฟอร์แมต JSON สวยงาม
+  - เพิ่ม IPC Handlers (`todos:load`, `todos:save`, `todos:openFolder`) ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts) และเปิดช่องทางผ่าน Preload Bridge
+  - สร้าง Pinia Store [stores/todo.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/todo.ts) รองรับ CRUD, กรองสถานะ (`All`, `Active`, `Completed`), กรองหมวดหมู่ (`Study`, `Work`, `Personal`, `Chill`), กรองระดับความสำคัญ (`High`, `Medium`, `Low`), ค้นหาข้อความ และคำนวณสถิติ
+  - สร้าง UI Component [TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue) และ [TodoItemCard.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoItemCard.vue) พร้อมการ์ดสถิติ, หลอด Progress Bar, ตัวเลขนับถอยหลังระยะเวลาที่ใช้ทำงาน (`Done in ...`), และปุ่มเปิดดูไฟล์ JSON
+  - เพิ่มแท็บ **Focus Tasks** ใน Sidebar ของ [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) พร้อม Badge แสดงจำนวนงานค้าง (Pending Count) แบบ Real-time
+  - ผ่านการทดสอบ Type Check `npm run typecheck` (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.1.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 10: Version 1.1.0 Release
+- **Task:** ปรับเปลี่ยนเลขเวอร์ชันโปรแกรมเป็น **v1.1.0** และคอมไพล์ตัวติดตั้งใหม่
+- **Details:**
+  - อัปเดต `version: 1.1.0` ใน [package.json](file:///d:/Source/github/sorinoi/lofi-player/package.json) และ [package-lock.json](file:///d:/Source/github/sorinoi/lofi-player/package-lock.json)
+  - อัปเดต Badge บนหน้าจอ Splash Screen ใน [resources/splash.html](file:///d:/Source/github/sorinoi/lofi-player/resources/splash.html) และ `build/splash.html` เป็น `v1.1.0`
+  - อัปเดตเอกสารประกอบการใช้งาน [README.md](file:///d:/Source/github/sorinoi/lofi-player/README.md) รองรับฟีเจอร์ใหม่ Quad-View Mini Player, Cinema Mode และ Ghost Timer
+  - ผ่านการตรวจสอบ Type Check (`npm run typecheck` 0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.1.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 9: YouTube Fullscreen & Cinema Mode Tab Overlap Fix
+- **Task:** แก้ไขปัญหาแถบ Titlebar และส่วนควบคุมวิดีโอซ้อนทับกันเมื่อเปิดวิดีโอแบบเต็มจอ (Cinema Mode / Fullscreen)
+- **Details:**
+  - เพิ่ม `isCinemaMode` และ `toggleCinemaMode()` ใน [stores/youtube.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/youtube.ts) เพื่อให้ทุก Component ซิงค์สถานะเดียวกัน
+  - เพิ่มคลาส `.cinema-video-fullscreen` ใน [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) กำหนด `position: fixed; inset: 0; z-index: 60; width: 100vw; height: 100vh;` ขยายวิดีโอคลุมเต็มหน้าต่างแบบ 100% เหนือ Titlebar, Sidebar และ Footer ไม่มีการทับซ้อนของแถบใด ๆ
+  - ปรับปรุง [YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) ใน Cinema Mode ให้มี **Floating Minimalist Top Bar** โปร่งแสง พร้อมปุ่ม `[🎬 Exit Cinema]` และดักจับปุ่ม `Escape` บนคีย์บอร์ดเพื่อออกจากโหมดเต็มจอ
+  - เพิ่ม CSS `:fullscreen { z-index: 99999 !important; }` ป้องกันการชนกันของ HTML5 Fullscreen API
+  - ผ่านการทดสอบ `npm run typecheck` (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.0.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 8: Floating Ghost Timer in Video Mode
+- **Task:** พัฒนาระบบตัวเลขนับถอยหลังโปร่งแสง (Floating Ghost Timer) ลอยเหนือหน้าจอวิดีโอ YouTube ทั้งใน Mini-Player และ Desktop Cinema Mode
+- **Details:**
+  - เพิ่ม Ghost Timer Overlay ใน [MiniPlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/MiniPlayer.vue) (View 4: Video View) แสดงตัวเลขนับถอยหลังแบบโปร่งแสง (`opacity: 50%`) พร้อมการ์ดกระจกฝ้าอ่อน `bg-black/35 backdrop-blur-[2px]` กึ่งกลางหน้าจอจิ๋ว
+  - เพิ่ม Ghost Timer Overlay ใน [YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) ลอยอยู่ที่มุมขวาบนของหน้าจอวิดีโอทั้งในโหมดมาตรฐานและ Cinema Mode
+  - รองรับทั้ง **Pomodoro Focus Timer** (🎯 `Focus Session` / `Break Time`) และ **Sleep Timer** (🌙 `Sleep Countdown`) ซ่อนตัวอัตโนมัติเมื่อหยุดจับเวลา
+  - กำหนดเป็น `pointer-events-none` คลิกทะลุได้ 100% ไม่บดบังวิดีโอ
+  - ผ่านการทดสอบ `npm run typecheck` (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.0.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 7: Dedicated YouTube Video Screen Mode & Quad-View Mini Player
+- **Task:** พัฒนาระบบปุ่มและโหมดแสดงหน้าจอ YouTube Video โดยเฉพาะ ทั้งในหน้าต่างหลักและ Floating Mini-Player
+- **Details:**
+  - อัปเกรด [MiniPlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/MiniPlayer.vue) เป็น **Quad-View Widget** (`[Track] [VU] [Timer] [Video]`) พร้อมแสดงผลสตรีมวิดีโอสดจริงในหน้าต่างจิ๋ว 360×220 px และ Floating HUD Overlay
+  - เพิ่มปุ่ม **`📺 Video Screen`** ที่แถบควบคุมด้านล่าง (Footer) และปุ่ม **`[📺 Watch Video Stream]`** ใน Now Playing Header ใน [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue)
+  - เพิ่มโหมด **`[🎬 Cinema Mode]`** ใน [YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) สำหรับโฟกัสหน้าจอวิดีโอแบบไร้สิ่งรบกวน
+  - ปรับโครงสร้าง DOM ใน [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) โดยย้าย `<YouTubePlayer />` ออกมาเป็น Top-level Adaptive Component ควบคุมด้วยคลาส `.mini-video-fixed` (เมื่ออยู่ในโหมด Mini Player Video) และ `.desktop-youtube-active` (เมื่ออยู่ในหน้า Desktop) เพื่อไม่ให้วิดีโอถูกคลาส `.invisible-player` ของ Desktop Container บดบัง
+  - ผ่านการทดสอบ `npm run typecheck` (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.0.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 6: Native Splash Screen Integration
+- **Task:** พัฒนาระบบ Native Dual-Window Splash Screen พร้อมภาพ `splash.png`, แอนิเมชัน Equalizer/Progress Bar และการันตีเวลาแสดงผลอย่างน้อย 3 วินาที
+- **Details:**
+  - สำเนา `splash.png` ไปยัง `resources/splash.png` และ `build/splash.png`
+  - สร้างหน้า UI [resources/splash.html](file:///d:/Source/github/sorinoi/lofi-player/resources/splash.html) ดีไซน์ Cozy Card, Animated Equalizer Bars, Sleek Progress Bar, Dynamic Status Text ("Brewing coffee...", "Calibrating tape...", "Mixing ambient...") และ Fade-out Transition
+  - เพิ่มฟังก์ชัน `createSplashWindow()` และใช้ `Promise.all` ซิงค์เวลาระหว่าง Timer 3 วินาที กับ Event `ready-to-show` ของ `mainWindow` ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts)
+  - ผ่านการทดสอบ `npm run typecheck` (0 errors)
+  - คอมไพล์ตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.0.0.exe`** เรียบร้อย
+
+### [2026-08-28] - Task 5: Custom App Icon Integration
+- **Task:** ติดตั้งและผูกไอคอน `cga-lofi.ico` เข้ากับระบบ Build ของ Electron และหน้าต่างโปรแกรม
+- **Details:**
+  - สำเนา `cga-lofi.ico` ไปยัง `build/icon.ico` และ `resources/icon.ico`
+  - ตั้งค่า `win.icon` และ `buildResources` ใน [electron-builder.yml](file:///d:/Source/github/sorinoi/lofi-player/electron-builder.yml)
+  - กำหนด `icon: join(__dirname, '../../resources/icon.ico')` ให้กับ `BrowserWindow` ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts)
+  - ผ่านการทดสอบ `npm run typecheck` (0 errors)
+  - คอมไพล์และสร้างตัวติดตั้ง Windows สำเร็จ 100% ผ่าน `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.0.0.exe`** ที่มีไอคอนใหม่เรียบร้อย
+

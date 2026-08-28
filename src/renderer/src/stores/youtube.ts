@@ -25,6 +25,7 @@ export const useYouTubeStore = defineStore('youtube', () => {
   const isLoading = ref<boolean>(false)
   const errorMessage = ref<string | null>(null)
   const displayMode = ref<'video' | 'visualizer'>('video')
+  const isCinemaMode = ref<boolean>(false)
   const bookmarks = ref<YouTubeBookmark[]>([])
   const urlInput = ref<string>('')
   const isBookmarked = ref<boolean>(false)
@@ -148,6 +149,10 @@ export const useYouTubeStore = defineStore('youtube', () => {
     displayMode.value = displayMode.value === 'video' ? 'visualizer' : 'video'
   }
 
+  function toggleCinemaMode(): void {
+    isCinemaMode.value = !isCinemaMode.value
+  }
+
   async function toggleBookmark(): Promise<void> {
     if (isBookmarked.value) {
       bookmarks.value = bookmarks.value.filter((b) => b.videoId !== currentVideoId.value)
@@ -183,6 +188,7 @@ export const useYouTubeStore = defineStore('youtube', () => {
     isLoading,
     errorMessage,
     displayMode,
+    isCinemaMode,
     bookmarks,
     urlInput,
     isBookmarked,
@@ -192,6 +198,7 @@ export const useYouTubeStore = defineStore('youtube', () => {
     handlePlayerError,
     togglePlayPause,
     toggleDisplayMode,
+    toggleCinemaMode,
     toggleBookmark,
     deleteBookmark,
     clearError

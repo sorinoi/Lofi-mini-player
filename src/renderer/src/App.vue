@@ -21,7 +21,8 @@ import {
   Moon,
   Target,
   Keyboard,
-  Zap
+  Tv,
+  CheckSquare
 } from 'lucide-vue-next'
 import { useAppStore } from './stores/app'
 import { usePlayerStore } from './stores/player'
@@ -29,7 +30,7 @@ import { useLibraryStore } from './stores/library'
 import { useAmbientStore } from './stores/ambient'
 import { useTimerStore } from './stores/timer'
 import { useYouTubeStore } from './stores/youtube'
-import { useQuotaStore } from './stores/quota'
+import { useTodoStore } from './stores/todo'
 import { youtubeService } from './services/youtubeService'
 import { audioEngine } from './services/audioEngine'
 import { setupKeyboardShortcuts } from './services/shortcutService'
@@ -39,8 +40,8 @@ import VisualizerContainer from './components/visualizers/VisualizerContainer.vu
 import MusicLibrary from './components/library/MusicLibrary.vue'
 import AmbientMixer from './components/ambient/AmbientMixer.vue'
 import YouTubePlayer from './components/youtube/YouTubePlayer.vue'
+import TodoView from './components/todo/TodoView.vue'
 import TimerModal from './components/timers/TimerModal.vue'
-import QuotaModal from './components/quota/QuotaModal.vue'
 
 const appStore = useAppStore()
 const playerStore = usePlayerStore()
@@ -48,7 +49,7 @@ const libraryStore = useLibraryStore()
 const ambientStore = useAmbientStore()
 const timerStore = useTimerStore()
 const ytStore = useYouTubeStore()
-const quotaStore = useQuotaStore()
+const todoStore = useTodoStore()
 
 const isTimerModalOpen = ref(false)
 const showShortcutsModal = ref(false)
@@ -63,6 +64,11 @@ function handleTogglePlayPause(): void {
   } else {
     playerStore.togglePlay()
   }
+}
+
+function handleShowYouTubeVideo(): void {
+  appStore.setActiveTab('youtube')
+  ytStore.displayMode = 'video'
 }
 let cleanupShortcuts: (() => void) | null = null
 
@@ -90,8 +96,8 @@ async function handleSwitchToMini(): Promise<void> {
 
 onMounted(async () => {
   cleanupShortcuts = setupKeyboardShortcuts()
-  quotaStore.initQuota()
   await libraryStore.initLibrary()
+  await todoStore.initTodos()
   if (libraryStore.tracks.length > 0 && playerStore.playlist.length === 0) {
     playerStore.playlist = [...libraryStore.tracks]
   }
@@ -109,9 +115,30 @@ onUnmounted(() => {
     <!-- Mini Player Mode View (Active Overlay) -->
     <div
       v-show="appStore.isMiniPlayer"
-      class="w-full h-full absolute inset-0 z-50 bg-lofi-bg overflow-hidden"
+      class="w-full h-full absolute inset-0 z-50 overflow-hidden"
+      :class="[
+        appStore.miniPlayerView === 'video' ? 'bg-transparent' : 'bg-lofi-bg'
+      ]"
     >
       <MiniPlayer />
+    </div>
+
+    <!-- YouTube Stream Player (Persistent DOM, positioned adaptively) -->
+    <div
+      :class="[
+        'overflow-hidden',
+        ytStore.isCinemaMode && !appStore.isMiniPlayer
+          ? 'cinema-video-fullscreen'
+          : appStore.isMiniPlayer && appStore.miniPlayerView === 'video'
+          ? 'mini-video-fixed'
+          : appStore.isMiniPlayer
+          ? 'invisible-player'
+          : appStore.activeTab === 'youtube'
+          ? 'desktop-youtube-active'
+          : 'invisible-player'
+      ]"
+    >
+      <YouTubePlayer />
     </div>
 
     <!-- Full Desktop Experience Mode View (Preserved in DOM to maintain continuous YouTube playback) -->
@@ -204,6 +231,25 @@ onUnmounted(() => {
               <Youtube class="w-4 h-4 text-lofi-pink" />
               <span>YouTube Stream</span>
             </button>
+
+            <button
+              @click="appStore.setActiveTab('todo')"
+              :class="[
+                'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all',
+                appStore.activeTab === 'todo'
+                  ? 'bg-lofi-card text-lofi-primary border border-lofi-border font-semibold shadow-sm'
+                  : 'text-lofi-muted hover:text-lofi-text hover:bg-lofi-surface/60'
+              ]"
+            >
+              <CheckSquare class="w-4 h-4 text-emerald-400" />
+              <span>Focus Tasks</span>
+              <span
+                v-if="todoStore.pendingCount > 0"
+                class="ml-auto px-1.5 py-0.2 text-2xs bg-emerald-500/20 text-emerald-300 rounded-full font-bold border border-emerald-500/30"
+              >
+                {{ todoStore.pendingCount }}
+              </span>
+            </button>
           </nav>
         </div>
 
@@ -234,31 +280,6 @@ onUnmounted(() => {
             >
               <Moon class="w-2.5 h-2.5" />
               {{ formatTime(timerStore.sleepSecondsLeft) }}
-            </span>
-          </button>
-
-          <!-- Codex / AI Subscription Rate Limit Trigger Button -->
-          <button
-            @click="quotaStore.isModalOpen = true"
-            class="w-full flex items-center justify-between py-2 px-2.5 rounded-xl bg-lofi-card hover:bg-lofi-border/60 text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm group"
-          >
-            <div class="flex items-center gap-2">
-              <Zap class="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span>AI Rate Limit</span>
-            </div>
-
-            <!-- Live Quota % Pill -->
-            <span
-              class="px-1.5 py-0.5 rounded-full text-2xs font-mono font-bold flex items-center gap-1 border"
-              :class="[
-                quotaStore.statusColor === 'green'
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  : quotaStore.statusColor === 'amber'
-                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                  : 'bg-rose-500/20 text-rose-400 border-rose-500/30 animate-pulse'
-              ]"
-            >
-              {{ quotaStore.usedPercentage }}%
             </span>
           </button>
 
@@ -309,6 +330,15 @@ onUnmounted(() => {
               <span class="px-2.5 py-0.5 rounded-full bg-lofi-card border border-lofi-border text-2xs uppercase tracking-wider text-lofi-primary font-semibold">
                 {{ ytStore.isPlaying ? 'YouTube Live Stream' : (playerStore.currentTrack?.genre || 'Lofi') }}
               </span>
+              <button
+                v-if="ytStore.isPlaying || appStore.activeTab === 'youtube'"
+                @click="handleShowYouTubeVideo"
+                class="px-2.5 py-0.5 rounded-full bg-lofi-pink/20 hover:bg-lofi-pink/30 border border-lofi-pink/40 text-2xs uppercase tracking-wider text-lofi-pink font-semibold flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Switch directly to YouTube Video Screen"
+              >
+                <Tv class="w-3 h-3" />
+                <span>Watch Video Stream</span>
+              </button>
             </div>
             <h2 class="text-xl font-bold text-lofi-text truncate tracking-wide">
               {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack?.title || 'No Track Playing') }}
@@ -332,14 +362,15 @@ onUnmounted(() => {
           <AmbientMixer />
         </div>
 
-        <!-- Tab 4: YouTube Stream Player (Always mounted in DOM to prevent audio interruption) -->
+        <!-- Tab 4: YouTube Stream Player (Layout placeholder for desktop view) -->
         <div
-          :class="[
-            'flex-1 overflow-hidden z-10',
-            appStore.activeTab === 'youtube' ? 'w-full h-full' : 'invisible-player'
-          ]"
-        >
-          <YouTubePlayer />
+          v-show="appStore.activeTab === 'youtube'"
+          class="flex-1 overflow-hidden pointer-events-none"
+        ></div>
+
+        <!-- Tab 5: To-Do / Focus Task Manager -->
+        <div v-show="appStore.activeTab === 'todo'" class="flex-1 overflow-hidden z-10 flex flex-col">
+          <TodoView />
         </div>
 
         <!-- Bottom Audio Player Control Bar -->
@@ -472,6 +503,22 @@ onUnmounted(() => {
               </span>
             </div>
 
+            <!-- Direct YouTube Video Screen Quick Button -->
+            <button
+              v-if="ytStore.isPlaying || appStore.activeTab === 'youtube'"
+              @click="handleShowYouTubeVideo"
+              :class="[
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all mr-1 shadow-sm',
+                appStore.activeTab === 'youtube' && ytStore.displayMode === 'video'
+                  ? 'bg-lofi-pink/20 text-lofi-pink border-lofi-pink/40'
+                  : 'bg-lofi-card text-lofi-muted hover:text-lofi-pink border-lofi-border hover:border-lofi-pink/40'
+              ]"
+              title="Show YouTube Video Screen"
+            >
+              <Tv class="w-3.5 h-3.5 text-lofi-pink" />
+              <span class="text-2xs font-medium">Video Screen</span>
+            </button>
+
             <button
               @click="appStore.setActiveTab('player')"
               class="text-lofi-muted hover:text-lofi-text ml-0.5 transition-colors p-1"
@@ -490,9 +537,6 @@ onUnmounted(() => {
       :is-open="isTimerModalOpen"
       @close="isTimerModalOpen = false"
     />
-
-    <!-- Codex / AI Subscription Rate Limit Monitor Modal -->
-    <QuotaModal />
 
     <!-- Keyboard Shortcuts Modal -->
     <div
@@ -554,5 +598,50 @@ onUnmounted(() => {
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: visible !important;
+}
+
+.mini-video-fixed {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 20 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+  background-color: #000 !important;
+}
+
+.desktop-youtube-active {
+  position: absolute !important;
+  left: 240px !important;
+  top: 36px !important;
+  right: 0 !important;
+  bottom: 80px !important;
+  z-index: 15 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+}
+
+.cinema-video-fullscreen {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 60 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+  background-color: #000 !important;
+}
+
+:fullscreen {
+  z-index: 99999 !important;
 }
 </style>

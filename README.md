@@ -51,25 +51,29 @@
 - เล่นเพลงจากลิงก์ YouTube ได้ทุกรูปแบบ (Watch URL, Short link, Live stream, Embed ID)
 - สลับมุมมองระหว่าง **Video View (16:9)** และ **VU Visualizer View** ได้อย่างลื่นไหล
 - **VU Meter ตอบสนองกับสตรีม YouTube แบบ Real-time**
+- **Cinema Mode (โหมดโรงภาพยนตร์):** เปิดดูวิดีโอแบบเต็มหน้าจอ ไร้แถบซ้อนทับ พร้อมแถบควบคุมลอยแบบ Minimalist (กด <kbd>Esc</kbd> เพื่อออก)
+- **Floating Ghost Timer:** แสดงตัวเลขนับถอยหลังของ Focus / Sleep Timer แบบโปร่งแสงลอยบนหน้าจอวิดีโออย่างนุ่มนวล
 - บันทึกสถานีสตรีมสด 24/7 ที่ชื่นชอบไว้ใน Bookmark
 
-### 📱 6. Floating Mini-Player Mode (Tri-View Widget)
+### 📱 6. Floating Mini-Player Mode (Quad-View Widget)
 - ย่อขนาดหน้าต่างเป็น Widget จิ๋วขนาดกะทัดรัด (360×220 px) ลอยอยู่บนสุดของหน้าจอเสมอ (Always on Top)
-- **Tri-View Switcher** กดสลับมุมมองได้ถึง 3 แบบ:
+- **Quad-View Switcher** กดสลับมุมมองได้ถึง 4 แบบ:
   1. 🎵 **Track View:** ปกเพลง, ชื่อเพลง, แถบความคืบหน้า และปุ่มควบคุม
   2. 📻 **VU Visualizer View:** แสดงหน้าปัด VU Meter พร้อมปุ่มเปลี่ยนรูปแบบคลื่นเสียง
   3. ⏱️ **Timer View:** หน้าปัดนาฬิกาโฟกัสขนาดใหญ่ พร้อมปุ่มเลือกเวลา 25m, 45m, 60m
+  4. 📺 **Video View:** แสดงสตรีมวิดีโอ YouTube แบบสดจริง พร้อมนาฬิกาโปร่งแสงลอยกลางจอ
 - **Real-time Taskbar Countdown:** แสดงเวลานับถอยหลัง `[🎯 24:59] Lofi Player` บนแถบ Taskbar ของ Windows ตลอดเวลา แม้พับหน้าต่างลง
 
-### 🔊 7. Centralized Master Volume & Chromium Native Audio Muting
+### ✅ 7. Focus Tasks & To-Do Manager (JSON File Database)
+- ระบบจัดการงานและเป้าหมายระหว่างฟังเพลง Lofi
+- **JSON File Database:** ข้อมูลทั้งหมดจัดเก็บถาวรในไฟล์ `todos.json` บนเครื่องผู้ใช้ พร้อมปุ่ม **`[📁 Open JSON File]`** เปิดดูและ Backup ได้ทันที
+- **Timestamp Tracking:** บันทึกวัน/เวลาสร้าง (`createdAt`) และวัน/เวลาที่ทำเสร็จ (`completedAt`) พร้อมคำนวณระยะเวลาที่ใช้ (เช่น `Done in 25m`)
+- **Smart Filtering & Categories:** จัดการหมวดหมู่ (💼 Work, 📚 Study, 🌿 Personal, ☕ Chill) และระดับความสำคัญ (🔴 High, 🟡 Medium, 🟢 Low)
+- **Real-time Sidebar Badge:** แสดงตัวเลขงานที่ค้างอยู่บนเมนู Sidebar ตลอดเวลา
+
+### 🔊 8. Centralized Master Volume & Chromium Native Audio Muting
 - แถบควบคุมเสียงด้านล่างคุมระดับเสียงภาพรวมของทุกแหล่งเสียง (Local Music, Ambient Synthesizer, และ YouTube)
 - ปุ่ม **Master Mute** ตัดเสียงเงียบสนิท 100% ระดับ Chromium Native Audio Engine
-
-### ⚡ 8. Codex & AI Subscription Rate Limit / Quota Monitor (สำหรับนักพัฒนา & สายโปรดักทีฟ)
-- ตรวจสอบโควต้าและอัตราการใช้งาน AI Subscription (เช่น **Codex / ChatGPT Plus & Team**, **OpenAI API**, **GitHub Copilot**, หรือ Custom Endpoint)
-- **Live Indicator Badge:** แสดงผล % การใช้งานแบบ Real-time พร้อมเวลานับถอยหลัง Reset รอบถัดไป บน Titlebar, Sidebar และ Mini-Player
-- **Interactive Quota Dashboard:** หน้าต่างแดชบอร์ดสรุปสถิติอย่างละเอียด (จำนวนคำขอที่เหลือ, กราฟิก Progress Bar หลากสีตามสถานะ เขียว/ส้ม/แดง, ปุ่ม Test Connection และ Auto-refresh ทุก 3 นาที)
-- ปลอดภัย 100%: บันทึก Token ลงในเครื่องเฉพาะบุคคล (Local Only) ไม่มีการส่งออกภายนอก
 
 ---
 
@@ -83,6 +87,7 @@
 | <kbd>M</kbd> | ปิด / เปิดเสียงทั้งหมด (Master Mute / Unmute) |
 | <kbd>N</kbd> | เล่นเพลงถัดไป (Next Track) |
 | <kbd>P</kbd> | เล่นเพลงก่อนหน้า (Previous Track) |
+| <kbd>Esc</kbd> | ออกจากโหมด Cinema Mode เต็มจอ |
 | *Hardware Media Keys* | รองรับปุ่มมัลติมีเดีย Play/Pause/Next บนคีย์บอร์ดและหูฟังบลูทูธ |
 
 ---
@@ -91,11 +96,11 @@
 
 ### ไฟล์ติดตั้งสำเร็จรูป (Installer File):
 ไฟล์ตัวติดตั้งที่ผ่านการคอมไพล์แล้วจะอยู่ในโฟลเดอร์ `dist/`:
-- **`dist/Lofi Player Setup 1.0.0.exe`** : ไฟล์ Setup ตัวติดตั้งสำหรับ Windows 10 / 11 (64-bit)
+- **`dist/Lofi Player Setup 1.1.0.exe`** : ไฟล์ Setup ตัวติดตั้งสำหรับ Windows 10 / 11 (64-bit) Version 1.1.0
 - **`dist/win-unpacked/LofiPlayer.exe`** : โปรแกรมแบบ Standalone Portable (ดับเบิลคลิกเปิดใช้งานได้ทันทีโดยไม่ต้องติดตั้ง)
 
 ### วิธีติดตั้ง:
-1. ดับเบิลคลิกที่ไฟล์ **`Lofi Player Setup 1.0.0.exe`**
+1. ดับเบิลคลิกที่ไฟล์ **`Lofi Player Setup 1.1.0.exe`**
 2. เลือกโฟลเดอร์ปลายทางที่ต้องการติดตั้ง แล้วกด **Install**
 3. โปรแกรมจะสร้าง Shortcut ไอคอนบน Desktop และ Start Menu พร้อมเปิดใช้งานทันที
 

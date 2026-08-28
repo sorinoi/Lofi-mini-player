@@ -2,10 +2,13 @@ appId: com.lofiplayer.desktop
 productName: Lofi Player
 directories:
   output: dist
+  buildResources: build
 files:
   - out/**/*
   - package.json
+  - resources/**/*
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch:
