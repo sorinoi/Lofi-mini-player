@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import {
   Play,
   Bookmark,
@@ -12,16 +12,37 @@ import {
   Tv,
   Loader2,
   AlertCircle,
-  X
+  X,
+  Film,
+  Minimize2,
+  Target,
+  Moon
 } from 'lucide-vue-next'
+import { useAppStore } from '../../stores/app'
 import { useYouTubeStore } from '../../stores/youtube'
 import { usePlayerStore } from '../../stores/player'
+import { useTimerStore } from '../../stores/timer'
 import { youtubeService, YOUTUBE_LOFI_PRESETS } from '../../services/youtubeService'
 import { audioEngine } from '../../services/audioEngine'
 import VisualizerContainer from '../visualizers/VisualizerContainer.vue'
 
+const appStore = useAppStore()
 const ytStore = useYouTubeStore()
 const playerStore = usePlayerStore()
+const timerStore = useTimerStore()
+
+function formatTime(seconds: number): string {
+  if (isNaN(seconds) || seconds < 0) return '00:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+function handleGlobalKeyDown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && ytStore.isCinemaMode) {
+    ytStore.isCinemaMode = false
+  }
+}
 
 async function mountYouTubePlayer(): Promise<void> {
   try {
@@ -69,17 +90,55 @@ async function handleLoadUrl(): Promise<void> {
 onMounted(() => {
   ytStore.initBookmarks()
   mountYouTubePlayer()
+  window.addEventListener('keydown', handleGlobalKeyDown)
 })
 
 onUnmounted(() => {
-  // Keep background audio unless switched
+  window.removeEventListener('keydown', handleGlobalKeyDown)
 })
 </script>
 
 <template>
-  <div class="w-full h-full flex flex-col p-6 overflow-y-auto max-w-6xl mx-auto space-y-6">
-    <!-- Header & URL Input -->
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+  <div
+    :class="[
+      'w-full h-full flex flex-col transition-all',
+      (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
+        ? 'p-0 overflow-hidden bg-black'
+        : 'p-6 overflow-y-auto max-w-6xl mx-auto space-y-6'
+    ]"
+  >
+    <!-- Floating Minimalist Cinema Header (Only in Cinema Mode) -->
+    <div
+      v-if="ytStore.isCinemaMode && !appStore.isMiniPlayer"
+      class="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto select-none animate-fadeIn"
+    >
+      <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 text-xs shadow-2xl">
+        <span class="px-1.5 py-0.5 rounded bg-red-600 text-white font-bold text-[8px] uppercase tracking-wider flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+          LIVE
+        </span>
+        <span class="font-bold text-white truncate max-w-sm">{{ ytStore.currentTitle }}</span>
+        <span class="text-white/40 text-[10px] hidden sm:inline">• {{ ytStore.currentChannel }}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          @click="ytStore.toggleCinemaMode"
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-black/60 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/15 transition-all shadow-2xl active:scale-95 cursor-pointer"
+          title="Exit Cinema Mode (Esc)"
+        >
+          <Minimize2 class="w-3.5 h-3.5 text-lofi-pink" />
+          <span>Exit Cinema</span>
+          <kbd class="px-1.5 py-0.2 rounded bg-white/10 font-mono text-[9px] text-white/60">Esc</kbd>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header & URL Input (Hidden in Cinema / Mini Video mode) -->
+    <div
+      v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+    >
       <div>
         <h2 class="text-2xl font-bold text-lofi-text flex items-center gap-2.5">
           <Tv class="w-6 h-6 text-lofi-pink" />
@@ -117,7 +176,7 @@ onUnmounted(() => {
 
     <!-- Error Alert Banner -->
     <div
-      v-if="ytStore.errorMessage"
+      v-if="ytStore.errorMessage && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
       class="p-3.5 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-between gap-3 text-xs text-red-300 backdrop-blur-sm shadow-md animate-fadeIn"
     >
       <div class="flex items-center gap-2.5 min-w-0">
@@ -134,12 +193,24 @@ onUnmounted(() => {
     </div>
 
     <!-- Main Player Container (Dual Mode: Video vs VU Visualizer) -->
-    <div class="w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-5 backdrop-blur-md shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+    <div
+      :class="[
+        (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
+          ? 'w-full h-full p-0 m-0 border-0 rounded-none bg-black flex items-center justify-center'
+          : 'w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-5 backdrop-blur-md shadow-2xl flex flex-col gap-4 relative overflow-hidden'
+      ]"
+    >
       <!-- Ambient Glow Behind Player -->
-      <div class="absolute -top-24 -right-24 w-80 h-80 bg-lofi-pink/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div
+        v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+        class="absolute -top-24 -right-24 w-80 h-80 bg-lofi-pink/10 rounded-full blur-3xl pointer-events-none"
+      ></div>
 
-      <!-- Player Controls Header (Title, Live Badge, View Mode Switcher, Bookmark) -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-lofi-border/50">
+      <!-- Player Controls Header (Title, Live Badge, View Mode Switcher, Cinema Mode, Bookmark) -->
+      <div
+        v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+        class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-lofi-border/50"
+      >
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <span class="px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 text-2xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-red-500/30 flex-shrink-0">
             <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
@@ -162,6 +233,21 @@ onUnmounted(() => {
             <span>{{ ytStore.displayMode === 'video' ? 'Switch to VU Visualizer' : 'Switch to Video View' }}</span>
           </button>
 
+          <!-- Cinema / Pure Video Mode Button -->
+          <button
+            @click="ytStore.toggleCinemaMode"
+            :class="[
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all',
+              ytStore.isCinemaMode
+                ? 'bg-lofi-pink/20 text-lofi-pink border-lofi-pink/40 shadow-sm'
+                : 'bg-lofi-card text-lofi-muted border-lofi-border hover:text-lofi-text'
+            ]"
+            :title="ytStore.isCinemaMode ? 'Exit Cinema Mode (Esc)' : 'Cinema Mode (Pure Video Focus)'"
+          >
+            <component :is="ytStore.isCinemaMode ? Minimize2 : Film" class="w-3.5 h-3.5 text-lofi-pink" />
+            <span>{{ ytStore.isCinemaMode ? 'Exit Cinema' : 'Cinema Mode' }}</span>
+          </button>
+
           <!-- Bookmark Button -->
           <button
             @click="ytStore.toggleBookmark"
@@ -181,12 +267,19 @@ onUnmounted(() => {
       </div>
 
       <!-- Display Area: 16:9 Video Embed OR Visualizer (Using v-show to prevent reload) -->
-      <div class="w-full relative rounded-2xl overflow-hidden bg-black/60 border border-lofi-border flex items-center justify-center min-h-[360px] aspect-video">
+      <div
+        :class="[
+          'w-full relative overflow-hidden flex items-center justify-center',
+          (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
+            ? 'w-full h-full rounded-none border-0'
+            : 'rounded-2xl bg-black/60 border border-lofi-border min-h-[360px] aspect-video'
+        ]"
+      >
         <!-- 1. Video Mode Container (Protected with Non-Destructive Wrapper & Off-screen Preservation) -->
         <div
           :class="[
             'w-full h-full flex items-center justify-center',
-            ytStore.displayMode === 'video' ? 'absolute inset-0' : 'invisible-player'
+            ytStore.displayMode === 'video' || ytStore.isCinemaMode || (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') ? 'absolute inset-0' : 'invisible-player'
           ]"
         >
           <div id="youtube-player-element-wrapper" class="w-full h-full relative">
@@ -205,16 +298,39 @@ onUnmounted(() => {
 
         <!-- 2. VU Visualizer Mode -->
         <div
-          v-if="ytStore.displayMode === 'visualizer'"
+          v-if="ytStore.displayMode === 'visualizer' && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
           class="w-full h-full p-4 flex items-center justify-center bg-lofi-bg/90"
         >
           <VisualizerContainer />
         </div>
+
+        <!-- 3. Floating Ghost Timer Overlay (Desktop & Cinema Mode Video View) -->
+        <div
+          v-if="!appStore.isMiniPlayer && (timerStore.isPomodoroRunning || timerStore.isSleepTimerActive)"
+          :class="[
+            'absolute z-20 pointer-events-none select-none flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-black/35 backdrop-blur-xs border border-white/10 shadow-2xl transition-all animate-fadeIn',
+            ytStore.isCinemaMode ? 'top-16 right-4' : 'top-4 right-4'
+          ]"
+        >
+          <Target v-if="timerStore.isPomodoroRunning" class="w-4 h-4 text-lofi-pink/70 animate-pulse" />
+          <Moon v-else-if="timerStore.isSleepTimerActive" class="w-4 h-4 text-lofi-purple/70 animate-pulse" />
+          <div class="flex flex-col items-end">
+            <span class="font-mono text-base font-bold tracking-widest text-white/50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {{ timerStore.isPomodoroRunning ? formatTime(timerStore.pomodoroSecondsLeft) : formatTime(timerStore.sleepSecondsLeft) }}
+            </span>
+            <span class="text-[8px] uppercase tracking-wider text-white/35 font-semibold">
+              {{ timerStore.isPomodoroRunning ? (timerStore.pomodoroMode === 'focus' ? 'Focus Session' : 'Break Time') : 'Sleep Countdown' }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Curated 24/7 Lofi Stream Stations -->
-    <div class="space-y-3">
+    <!-- Curated 24/7 Lofi Stream Stations (Hidden in Cinema / Mini Video mode) -->
+    <div
+      v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      class="space-y-3"
+    >
       <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
         <RadioTower class="w-4 h-4 text-lofi-pink" />
         <span>Curated 24/7 Lofi Stations:</span>
@@ -254,8 +370,11 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Saved YouTube Stream Bookmarks -->
-    <div v-if="ytStore.bookmarks.length > 0" class="space-y-3 pt-2">
+    <!-- Saved YouTube Stream Bookmarks (Hidden in Cinema / Mini Video mode) -->
+    <div
+      v-if="ytStore.bookmarks.length > 0 && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      class="space-y-3 pt-2"
+    >
       <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
         <Bookmark class="w-4 h-4 text-lofi-primary" />
         <span>Your Saved Stream Bookmarks:</span>

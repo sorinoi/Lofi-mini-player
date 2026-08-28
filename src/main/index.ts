@@ -5,13 +5,38 @@ import { createHash } from 'crypto'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as mm from 'music-metadata'
 import { resolveYouTubeUrl, fetchYouTubeMetadata } from './youtubeResolver'
+import { loadTodosFromFile, saveTodosToFile, openTodosFolder, TodoItem } from './todoStorage'
 
 // Disable user gesture requirement for media autoplay in Chromium
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
+let splashWindow: BrowserWindow | null = null
 let mainWindow: BrowserWindow | null = null
 let normalBounds: Rectangle = { x: 100, y: 100, width: 1040, height: 720 }
 let isAlwaysOnTopState = false
+
+function createSplashWindow(): void {
+  splashWindow = new BrowserWindow({
+    width: 500,
+    height: 320,
+    show: false,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    alwaysOnTop: true,
+    center: true,
+    icon: join(__dirname, '../../resources/icon.ico'),
+    webPreferences: {
+      sandbox: false
+    }
+  })
+
+  splashWindow.loadFile(join(__dirname, '../../resources/splash.html'))
+
+  splashWindow.once('ready-to-show', () => {
+    splashWindow?.show()
+  })
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -24,15 +49,12 @@ function createWindow(): void {
     title: 'Lofi Player',
     frame: false, // Frameless for custom cozy titlebar
     backgroundColor: '#14161f',
+    icon: join(__dirname, '../../resources/icon.ico'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       webSecurity: false // Permits local audio streaming smoothly
     }
-  })
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -247,6 +269,19 @@ ipcMain.handle('youtube:fetchMetadata', async (_, videoId: string) => {
   return await fetchYouTubeMetadata(videoId)
 })
 
+// IPC Handlers for JSON-based To-Do / Focus Task Manager
+ipcMain.handle('todos:load', async () => {
+  return loadTodosFromFile()
+})
+
+ipcMain.handle('todos:save', async (_, todos: TodoItem[]) => {
+  return saveTodosToFile(todos)
+})
+
+ipcMain.handle('todos:openFolder', async () => {
+  openTodosFolder()
+})
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron.lofiplayer')
 
@@ -291,10 +326,56 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window, { escToCloseWindow: false, zoom: false })
   })
 
+  // 1. Create and show Splash Window immediately
+  createSplashWindow()
+
+  // 2. Initialize Main Window in background
   createWindow()
 
+  // 3. Guarantee minimum 3-second splash duration and ensure mainWindow is ready
+  const minTimer = new Promise<void>((resolve) => setTimeout(resolve, 3000))
+  const mainReady = new Promise<void>((resolve) => {
+    if (!mainWindow) {
+      resolve()
+      return
+    }
+    if (mainWindow.isVisible()) {
+      resolve()
+      return
+    }
+    mainWindow.once('ready-to-show', () => resolve())
+  })
+
+  Promise.all([minTimer, mainReady]).then(() => {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.webContents
+        .executeJavaScript("document.body.classList.add('fade-out');")
+        .catch(() => {})
+      setTimeout(() => {
+        if (splashWindow && !splashWindow.isDestroyed()) {
+          splashWindow.close()
+          splashWindow = null
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }, 300)
+    } else {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    }
+  })
+
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow()
+      mainWindow?.once('ready-to-show', () => {
+        mainWindow?.show()
+      })
+    }
   })
 })
 

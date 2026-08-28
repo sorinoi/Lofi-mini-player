@@ -26,7 +26,12 @@ export const api = {
 
   // YouTube Stream URL Resolution & Metadata
   resolveYouTubeUrl: (input: string): Promise<any> => ipcRenderer.invoke('youtube:resolveUrl', input),
-  fetchYouTubeMetadata: (videoId: string): Promise<any> => ipcRenderer.invoke('youtube:fetchMetadata', videoId)
+  fetchYouTubeMetadata: (videoId: string): Promise<any> => ipcRenderer.invoke('youtube:fetchMetadata', videoId),
+
+  // JSON-based To-Do / Focus Task Manager
+  loadTodos: (): Promise<any[]> => ipcRenderer.invoke('todos:load'),
+  saveTodos: (todos: any[]): Promise<boolean> => ipcRenderer.invoke('todos:save', todos),
+  openTodosFolder: (): Promise<void> => ipcRenderer.invoke('todos:openFolder')
 }
 
 export type IElectronAPI = typeof api
