@@ -656,9 +656,9 @@ onUnmounted(() => {
   left: 10px !important;
   right: 10px !important;
   bottom: 10px !important;
-  height: 112px !important;
+  height: 180px !important;
   border-radius: 12px !important;
-  z-index: 35 !important;
+  z-index: 55 !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   visibility: visible !important;

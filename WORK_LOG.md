@@ -6,14 +6,14 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md)
-- **Current Status:** 🟢 Completed & Ready (Version 1.1.0 Setup Installer Ready)
+- **Task File:** [task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md)
+- **Current Status:** 🟢 Completed & Ready (Dock Window Repositioning Verified)
 
 ---
 
 ## 📌 Project Overview & Goals
 - **Project:** Lofi Music Player Desktop App (v1.1.0)
-- **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, electron-builder
+- **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, koffi, electron-builder
 - **Status:** 🟢 Released (Version 1.1.0 Setup Installer Ready)
 
 ---
@@ -44,10 +44,62 @@
 - [x] **Feature Addition:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
 - [x] **Feature Addition:** Note Record with JSON Database & Timestamps ([task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md))
 - [x] **Bug Fix:** Disable YouTube Autoplay on App Startup ([task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md))
+- [x] **Bug Fix:** Fix YouTube Video Rendering in Right Sidebar Dock Mode ([task/dock_sidebar_video_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_fix_task.md))
+- [x] **UI/UX Enhancement:** Adjust Dock Sidebar YouTube Video Height to 16:9 Aspect Ratio ([task/dock_sidebar_video_aspect_ratio_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_aspect_ratio_task.md))
+- [x] **Desktop Integration:** Windows Desktop Space Reservation (AppBar) for Dock Sidebar Mode ([task/appbar_screen_reservation_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/appbar_screen_reservation_task.md))
+- [x] **Bug Fix:** Fix Dock Sidebar Window Positioning in Reserved AppBar Space ([task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-08-28] - Task 18: Fix Dock Sidebar Window Positioning in Reserved AppBar Space
+- **Plan Document:** [planning/dock_sidebar_position_fix.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_position_fix.md)
+- **Task Tracker:** [task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md)
+- **Task Summary:** แก้ไขปัญหาหน้าต่าง Lofi Player ไม่กระโดดไปอยู่ในพื้นที่ด้านขวาสุดที่จองไว้ โดยปรับปรุงการคำนวณพิกัดจากความละเอียดเต็มจอ `display.bounds` (`bounds.x + bounds.width - width`), เพิ่มการสั่ง Native Win32 `SetWindowPos` พร้อมระบบ Staggered Retries ป้องกัน Race Condition จากการ `unmaximize()`, และผ่อนปรน `setMinimumSize(100, 100)` ในโหมด Dock
+- **Details:**
+  - ปรับปรุง [src/main/appBarService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/appBarService.ts) ใช้ `display.bounds` เพื่ออ้างอิงขอบจอขวาสุดที่แท้จริง (`targetX = bounds.x + bounds.width - width`, `targetHeight = bounds.height`)
+  - เพิ่มระบบ Staggered Retries (`immediate`, `60ms`, `180ms`) ในการเรียก `SetWindowPos` และ `window.setBounds` เพื่อป้องกัน OS Restore Event ของ `unmaximize()` เขียนทับพิกัด
+  - ปรับปรุง [src/main/index.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/index.ts) ปรับ `setMinimumSize(100, 100)` เมื่อเข้า Dock Mode และคืนค่า `setMinimumSize(340, 200)` เมื่อออกจาก Dock Mode
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` สำเร็จ 100% (0 errors)
+  - คอมไพล์และ Packaging ตัวติดตั้ง Windows `npm run build:win` สำเร็จ 100%
+
+### [2026-08-28] - Task 17: Windows Desktop Space Reservation (AppBar) for Dock Sidebar Mode
+- **Plan Document:** [planning/appbar_screen_reservation.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/appbar_screen_reservation.md)
+- **Task Tracker:** [task/appbar_screen_reservation_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/appbar_screen_reservation_task.md)
+- **Task Summary:** พัฒนาระบบจองพื้นที่หน้าจอเดสก์ท็อป Windows (AppBar) ผ่านไลบรารี `koffi` C-FFI เมื่อเข้าสู่โหมด Right Sidebar Dock Mode เพื่อไม่ให้แอปพลิเคชันอื่นที่เปิดเต็มจอขยายมาทับหรือแทรกไปด้านหลัง Sidebar
+- **Details:**
+  - ติดตั้งไลบรารี `koffi` (Fast & Modern C-FFI for Node.js / Electron)
+  - สร้างโมดูล [src/main/appBarService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/appBarService.ts) ผูก Win32 API `SHAppBarMessage` จาก `shell32.dll` (`ABM_NEW`, `ABM_QUERYPOS`, `ABM_SETPOS`, `ABM_ACTIVATE`, `ABM_REMOVE`)
+  - เชื่อมต่อการจองพื้นที่ใน [src/main/index.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/index.ts) เมื่อเข้าสู่โหมด `enterDockMode()` (ลด WorkArea ทางขวา 340px)
+  - เพิ่มระบบ Safe Cleanup อัตโนมัติเมื่อออกจาก Dock Mode (`exitDockMode()`), ย่อหน้าต่าง (`window:minimize`), สลับไป Mini Player (`window:enterMiniMode`), ปิดหน้าต่าง (`window:close`) และก่อนปิดแอป (`app.on('before-quit')`) คืนค่า WorkArea สู่ปกติ 100%
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` สำเร็จ 100% (0 errors)
+  - คอมไพล์และ Packaging ตัวติดตั้ง Windows `npm run build:win` ได้ไฟล์ **`dist/Lofi Player Setup 1.1.0.exe`** สำเร็จ 100%
+
+### [2026-08-28] - Task 16: Adjust Dock Sidebar YouTube Video Height to 16:9 Aspect Ratio
+- **Plan Document:** [planning/dock_sidebar_video_aspect_ratio.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_video_aspect_ratio.md)
+- **Task Tracker:** [task/dock_sidebar_video_aspect_ratio_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_aspect_ratio_task.md)
+- **Task Summary:** ปรับขนาดความสูงของหน้าจอวิดีโอ YouTube ในโหมด Right Sidebar Dock Mode จากเดิม 112px เป็น 180px เพื่อให้อัตราส่วนของภาพพอดีกับความกว้างหน้าต่าง (320px × 180px = 16:9 Widescreen)
+- **Details:**
+  - ปรับความสูงของคลาส `.dock-video-fixed` ใน [src/renderer/src/App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) เป็น `180px`
+  - ปรับความสูงของกล่อง Placeholder View 4 ใน [src/renderer/src/components/layout/DockSidebar.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/layout/DockSidebar.vue) เป็น `h-[180px]`
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` สำเร็จ 100% (0 errors)
+
+### [2026-08-28] - Task 15: Fix YouTube Video Rendering in Right Sidebar Dock Mode
+- **Plan Document:** [planning/dock_sidebar_video_fix.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_video_fix.md)
+- **Task Tracker:** [task/dock_sidebar_video_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_fix_task.md)
+- **Task Summary:** แก้ไขปัญหาภาพสตรีมสด YouTube ไม่แสดงผลเมื่อเปิดใช้งาน Right Sidebar Dock Mode และเลือกมุมมอง Video ในแถบ Mini-Player ด้านล่าง
+- **Details:**
+  - ปรับค่า `z-index` ของคลาส `.dock-video-fixed` ใน [src/renderer/src/App.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/App.vue) จาก `35` เป็น `55` เพื่อให้อยู่เหนือพื้นหลังทึบของหน้าต่าง DockSidebar
+  - ปรับปรุง [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/youtube/YouTubePlayer.vue) เพิ่ม Computed Properties `isPureVideoMode` และ `isDockVideoMode`
+  - ซ่อนองค์ประกอบ Desktop (Header, Search, Preset Grid, Bookmarks) เมื่ออยู่ในโหมด Dock Video
+  - เพิ่ม Minimalist HUD Overlay ใน [YouTubePlayer.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/youtube/YouTubePlayer.vue) สำหรับโหมด Dock Video (ป้าย LIVE, ชื่อสตรีม, ตัวเลขนับถอยหลัง Ghost Timer, ปุ่ม Play/Pause, ชื่อช่อง, แถบปรับเสียง Master Volume, ปุ่ม Mute)
+  - ปรับปรุง View 4 ใน [src/renderer/src/components/layout/DockSidebar.vue](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/renderer/src/components/layout/DockSidebar.vue) ให้เป็นกล่อง Placeholder สำหรับ Overlay ของ `.dock-video-fixed`
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` สำเร็จ 100% (0 errors)
 
 ### [2026-08-28] - Task 14: Disable YouTube Autoplay on App Startup
 - **Plan Document:** [planning/youtube_autoplay_fix.md](file:///d:/Source/github/sorinoi/lofi-player/planning/youtube_autoplay_fix.md)

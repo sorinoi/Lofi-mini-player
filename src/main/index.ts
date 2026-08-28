@@ -7,6 +7,7 @@ import * as mm from 'music-metadata'
 import { resolveYouTubeUrl, fetchYouTubeMetadata } from './youtubeResolver'
 import { loadTodosFromFile, saveTodosToFile, openTodosFolder, TodoItem } from './todoStorage'
 import { loadNotesFromFile, saveNotesToFile, openNotesFolder, NoteItem } from './noteStorage'
+import { appBarService } from './appBarService'
 
 // Disable user gesture requirement for media autoplay in Chromium
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
@@ -62,6 +63,18 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  mainWindow.on('restore', () => {
+    if (isDockModeState && mainWindow) {
+      appBarService.registerAppBar(mainWindow, 340)
+    }
+  })
+
+  mainWindow.on('close', () => {
+    if (isDockModeState && mainWindow) {
+      appBarService.unregisterAppBar(mainWindow)
+    }
   })
 
   // HMR for renderer based on electron-vite cli
@@ -147,6 +160,9 @@ function findAudioFilesInDir(dirPath: string): string[] {
 
 // IPC Handlers for Window Management & Frameless Controls
 ipcMain.handle('window:minimize', () => {
+  if (isDockModeState && mainWindow) {
+    appBarService.unregisterAppBar(mainWindow)
+  }
   mainWindow?.minimize()
 })
 
@@ -161,6 +177,9 @@ ipcMain.handle('window:maximize', () => {
 })
 
 ipcMain.handle('window:close', () => {
+  if (isDockModeState && mainWindow) {
+    appBarService.unregisterAppBar(mainWindow)
+  }
   mainWindow?.close()
 })
 
@@ -200,23 +219,32 @@ ipcMain.handle('window:toggleAlwaysOnTop', () => {
 
 function enterDockMode(): boolean {
   if (mainWindow) {
-    if (!isDockModeState && !mainWindow.isMaximized()) {
-      normalBounds = mainWindow.getBounds()
+    if (!isDockModeState) {
+      if (mainWindow.isMaximized()) {
+        normalBounds = mainWindow.getNormalBounds ? mainWindow.getNormalBounds() : mainWindow.getBounds()
+        mainWindow.unmaximize()
+      } else {
+        normalBounds = mainWindow.getBounds()
+      }
     }
-    const currentBounds = mainWindow.getBounds()
-    const display = screen.getDisplayNearestPoint({
-      x: currentBounds.x + currentBounds.width / 2,
-      y: currentBounds.y + currentBounds.height / 2
-    })
-    const { workArea } = display
     const DOCK_WIDTH = 340
-
-    mainWindow.setBounds({
-      x: Math.round(workArea.x + workArea.width - DOCK_WIDTH),
-      y: Math.round(workArea.y),
-      width: DOCK_WIDTH,
-      height: Math.round(workArea.height)
-    })
+    mainWindow.setMinimumSize(100, 100)
+    const registered = appBarService.registerAppBar(mainWindow, DOCK_WIDTH)
+    if (!registered) {
+      // Fallback positioning if AppBar registration fails (e.g. non-Windows)
+      const currentBounds = mainWindow.getBounds()
+      const display = screen.getDisplayNearestPoint({
+        x: currentBounds.x + currentBounds.width / 2,
+        y: currentBounds.y + currentBounds.height / 2
+      })
+      const { bounds } = display
+      mainWindow.setBounds({
+        x: Math.round(bounds.x + bounds.width - DOCK_WIDTH),
+        y: Math.round(bounds.y),
+        width: DOCK_WIDTH,
+        height: Math.round(bounds.height)
+      })
+    }
     mainWindow.setAlwaysOnTop(true)
     isAlwaysOnTopState = true
     isDockModeState = true
@@ -226,7 +254,11 @@ function enterDockMode(): boolean {
 
 function exitDockMode(): boolean {
   if (mainWindow) {
+    if (isDockModeState) {
+      appBarService.unregisterAppBar(mainWindow)
+    }
     isDockModeState = false
+    mainWindow.setMinimumSize(340, 200)
     mainWindow.setBounds({
       x: normalBounds.x,
       y: normalBounds.y,
@@ -251,6 +283,9 @@ ipcMain.handle('window:enterMiniMode', () => {
   if (mainWindow) {
     if (!isDockModeState && !mainWindow.isMaximized()) {
       normalBounds = mainWindow.getBounds()
+    }
+    if (isDockModeState) {
+      appBarService.unregisterAppBar(mainWindow)
     }
     isDockModeState = false
     mainWindow.setSize(360, 220)
@@ -464,5 +499,11 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+app.on('before-quit', () => {
+  if (isDockModeState && mainWindow && !mainWindow.isDestroyed()) {
+    appBarService.unregisterAppBar(mainWindow)
   }
 })

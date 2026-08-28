@@ -888,68 +888,11 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- VIEW 4: LIVE YOUTUBE VIDEO VIEW -->
-      <div v-else-if="appStore.dockMiniPlayerView === 'video'" class="flex flex-col justify-between h-28 relative rounded-xl overflow-hidden bg-black/60 border border-lofi-border/70 p-1.5">
-        <!-- Floating Live Badge & Title -->
-        <div class="flex items-center gap-1.5 z-20 pointer-events-none">
-          <span class="px-1 py-0.2 rounded bg-red-600/90 text-white font-bold text-[7px] uppercase tracking-wider shadow-sm flex items-center gap-1">
-            <span class="w-1 h-1 rounded-full bg-white animate-ping"></span>
-            LIVE
-          </span>
-          <span class="text-[9px] font-semibold text-white drop-shadow-md truncate max-w-[200px]">
-            {{ ytStore.currentTitle || 'YouTube Stream' }}
-          </span>
-        </div>
-
-        <!-- Floating Ghost Timer Overlay -->
-        <div
-          v-if="timerStore.isPomodoroRunning || timerStore.isSleepTimerActive"
-          class="absolute inset-0 flex items-center justify-center pointer-events-none z-15 select-none"
-        >
-          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-[2px] border border-white/10 shadow-xl">
-            <Target v-if="timerStore.isPomodoroRunning" class="w-3 h-3 text-lofi-pink/80 animate-pulse" />
-            <Moon v-else-if="timerStore.isSleepTimerActive" class="w-3 h-3 text-lofi-purple/80 animate-pulse" />
-            <span class="font-mono text-base font-bold tracking-wider text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-              {{ timerStore.isPomodoroRunning ? formatTime(timerStore.pomodoroSecondsLeft) : formatTime(timerStore.sleepSecondsLeft) }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Transparent Middle Frame Space for Adaptive Video Mount -->
-        <div class="flex-1 w-full"></div>
-
-        <!-- Bottom Minimal HUD -->
-        <div class="flex items-center justify-between p-1 bg-black/70 backdrop-blur-md rounded-lg border border-white/10 text-[9px] z-20 shadow-md">
-          <div class="flex items-center gap-1.5 truncate flex-1 mr-2">
-            <button
-              @click="togglePlayPause"
-              class="w-4 h-4 rounded-full bg-lofi-pink text-lofi-bg flex items-center justify-center hover:opacity-90 active:scale-95 flex-shrink-0 shadow-sm"
-            >
-              <Pause v-if="ytStore.isPlaying" class="w-2 h-2 fill-current" />
-              <Play v-else class="w-2 h-2 fill-current ml-0.2" />
-            </button>
-            <span class="truncate text-white/90 font-medium">
-              {{ ytStore.currentChannel || 'YouTube Live' }}
-            </span>
-          </div>
-
-          <div class="flex items-center gap-1 flex-shrink-0">
-            <button @click="playerStore.toggleMute" class="text-white/80 hover:text-white">
-              <VolumeX v-if="playerStore.isMuted || playerStore.volume === 0" class="w-3 h-3 text-red-400" />
-              <Volume2 v-else class="w-3 h-3" />
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              :value="playerStore.isMuted ? 0 : playerStore.volume"
-              @input="(e) => playerStore.setVolume(Number((e.target as HTMLInputElement).value))"
-              class="w-12 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-lofi-pink"
-            />
-          </div>
-        </div>
-      </div>
+      <!-- VIEW 4: LIVE YOUTUBE VIDEO VIEW (Placeholder slot for .dock-video-fixed overlay mount) -->
+      <div
+        v-else-if="appStore.dockMiniPlayerView === 'video'"
+        class="h-[180px] relative rounded-xl overflow-hidden bg-black/60 border border-lofi-border/70 flex items-center justify-center pointer-events-none"
+      ></div>
     </footer>
   </div>
 </template>

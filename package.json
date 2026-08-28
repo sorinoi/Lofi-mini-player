@@ -24,6 +24,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "howler": "^2.2.4",
     "idb-keyval": "^6.2.1",
+    "koffi": "^3.1.6",
     "lucide-vue-next": "^0.475.0",
     "music-metadata": "^7.14.0",
     "pinia": "^2.3.1",

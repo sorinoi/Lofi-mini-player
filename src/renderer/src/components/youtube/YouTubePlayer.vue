@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
   Play,
   Bookmark,
@@ -16,7 +16,9 @@ import {
   Film,
   Minimize2,
   Target,
-  Moon
+  Moon,
+  Volume2,
+  VolumeX
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { useYouTubeStore } from '../../stores/youtube'
@@ -30,6 +32,18 @@ const appStore = useAppStore()
 const ytStore = useYouTubeStore()
 const playerStore = usePlayerStore()
 const timerStore = useTimerStore()
+
+const isPureVideoMode = computed(() => {
+  return (
+    ytStore.isCinemaMode ||
+    (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') ||
+    (appStore.isDockMode && appStore.dockMiniPlayerView === 'video')
+  )
+})
+
+const isDockVideoMode = computed(() => {
+  return appStore.isDockMode && appStore.dockMiniPlayerView === 'video'
+})
 
 function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '00:00'
@@ -105,14 +119,14 @@ onUnmounted(() => {
   <div
     :class="[
       'w-full h-full flex flex-col transition-all',
-      (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
+      isPureVideoMode
         ? 'p-0 overflow-hidden bg-black'
         : 'p-6 overflow-y-auto max-w-6xl mx-auto space-y-6'
     ]"
   >
     <!-- Floating Minimalist Cinema Header (Only in Cinema Mode) -->
     <div
-      v-if="ytStore.isCinemaMode && !appStore.isMiniPlayer"
+      v-if="ytStore.isCinemaMode && !appStore.isMiniPlayer && !appStore.isDockMode"
       class="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto select-none animate-fadeIn"
     >
       <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 text-xs shadow-2xl">
@@ -137,9 +151,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Header & URL Input (Hidden in Cinema / Mini Video mode) -->
+    <!-- Header & URL Input (Hidden in Cinema / Mini Video / Dock Video mode) -->
     <div
-      v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      v-if="!isPureVideoMode"
       class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
     >
       <div>
@@ -179,7 +193,7 @@ onUnmounted(() => {
 
     <!-- Error Alert Banner -->
     <div
-      v-if="ytStore.errorMessage && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      v-if="ytStore.errorMessage && !isPureVideoMode"
       class="p-3.5 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-between gap-3 text-xs text-red-300 backdrop-blur-sm shadow-md animate-fadeIn"
     >
       <div class="flex items-center gap-2.5 min-w-0">
@@ -198,20 +212,20 @@ onUnmounted(() => {
     <!-- Main Player Container (Dual Mode: Video vs VU Visualizer) -->
     <div
       :class="[
-        (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
-          ? 'w-full h-full p-0 m-0 border-0 rounded-none bg-black flex items-center justify-center'
+        isPureVideoMode
+          ? 'w-full h-full p-0 m-0 border-0 rounded-none bg-black flex items-center justify-center relative'
           : 'w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-5 backdrop-blur-md shadow-2xl flex flex-col gap-4 relative overflow-hidden'
       ]"
     >
       <!-- Ambient Glow Behind Player -->
       <div
-        v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+        v-if="!isPureVideoMode"
         class="absolute -top-24 -right-24 w-80 h-80 bg-lofi-pink/10 rounded-full blur-3xl pointer-events-none"
       ></div>
 
       <!-- Player Controls Header (Title, Live Badge, View Mode Switcher, Cinema Mode, Bookmark) -->
       <div
-        v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+        v-if="!isPureVideoMode"
         class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-lofi-border/50"
       >
         <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -273,7 +287,7 @@ onUnmounted(() => {
       <div
         :class="[
           'w-full relative overflow-hidden flex items-center justify-center',
-          (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') || ytStore.isCinemaMode
+          isPureVideoMode
             ? 'w-full h-full rounded-none border-0'
             : 'rounded-2xl bg-black/60 border border-lofi-border min-h-[360px] aspect-video'
         ]"
@@ -282,7 +296,7 @@ onUnmounted(() => {
         <div
           :class="[
             'w-full h-full flex items-center justify-center',
-            ytStore.displayMode === 'video' || ytStore.isCinemaMode || (appStore.isMiniPlayer && appStore.miniPlayerView === 'video') ? 'absolute inset-0' : 'invisible-player'
+            ytStore.displayMode === 'video' || isPureVideoMode ? 'absolute inset-0' : 'invisible-player'
           ]"
         >
           <div id="youtube-player-element-wrapper" class="w-full h-full relative">
@@ -301,7 +315,7 @@ onUnmounted(() => {
 
         <!-- 2. VU Visualizer Mode -->
         <div
-          v-if="ytStore.displayMode === 'visualizer' && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+          v-if="ytStore.displayMode === 'visualizer' && !isPureVideoMode"
           class="w-full h-full p-4 flex items-center justify-center bg-lofi-bg/90"
         >
           <VisualizerContainer />
@@ -309,7 +323,7 @@ onUnmounted(() => {
 
         <!-- 3. Floating Ghost Timer Overlay (Desktop & Cinema Mode Video View) -->
         <div
-          v-if="!appStore.isMiniPlayer && (timerStore.isPomodoroRunning || timerStore.isSleepTimerActive)"
+          v-if="!appStore.isMiniPlayer && !isDockVideoMode && (timerStore.isPomodoroRunning || timerStore.isSleepTimerActive)"
           :class="[
             'absolute z-20 pointer-events-none select-none flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-black/35 backdrop-blur-xs border border-white/10 shadow-2xl transition-all animate-fadeIn',
             ytStore.isCinemaMode ? 'top-16 right-4' : 'top-4 right-4'
@@ -326,12 +340,73 @@ onUnmounted(() => {
             </span>
           </div>
         </div>
+
+        <!-- 4. Dock Sidebar Video Mode Overlays -->
+        <template v-if="isDockVideoMode">
+          <!-- Top Live Badge & Title -->
+          <div class="absolute top-1.5 left-1.5 right-1.5 z-20 flex items-center gap-1.5 pointer-events-none select-none">
+            <span class="px-1 py-0.2 rounded bg-red-600/90 text-white font-bold text-[7px] uppercase tracking-wider shadow-sm flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-white animate-ping"></span>
+              LIVE
+            </span>
+            <span class="text-[9px] font-semibold text-white drop-shadow-md truncate max-w-[200px]">
+              {{ ytStore.currentTitle || 'YouTube Stream' }}
+            </span>
+          </div>
+
+          <!-- Ghost Timer in Dock Mode -->
+          <div
+            v-if="timerStore.isPomodoroRunning || timerStore.isSleepTimerActive"
+            class="absolute inset-0 flex items-center justify-center pointer-events-none z-15 select-none"
+          >
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-[2px] border border-white/10 shadow-xl">
+              <Target v-if="timerStore.isPomodoroRunning" class="w-3 h-3 text-lofi-pink/80 animate-pulse" />
+              <Moon v-else-if="timerStore.isSleepTimerActive" class="w-3 h-3 text-lofi-purple/80 animate-pulse" />
+              <span class="font-mono text-base font-bold tracking-wider text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                {{ timerStore.isPomodoroRunning ? formatTime(timerStore.pomodoroSecondsLeft) : formatTime(timerStore.sleepSecondsLeft) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Bottom Minimal HUD -->
+          <div class="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between p-1 bg-black/70 backdrop-blur-md rounded-lg border border-white/10 text-[9px] z-20 shadow-md pointer-events-auto select-none">
+            <div class="flex items-center gap-1.5 truncate flex-1 mr-2">
+              <button
+                @click="ytStore.togglePlayPause()"
+                class="w-4 h-4 rounded-full bg-lofi-pink text-lofi-bg flex items-center justify-center hover:opacity-90 active:scale-95 flex-shrink-0 shadow-sm cursor-pointer"
+                title="Play / Pause Stream"
+              >
+                <Pause v-if="ytStore.isPlaying" class="w-2 h-2 fill-current" />
+                <Play v-else class="w-2 h-2 fill-current ml-0.2" />
+              </button>
+              <span class="truncate text-white/90 font-medium">
+                {{ ytStore.currentChannel || 'YouTube Live' }}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button @click="playerStore.toggleMute" class="text-white/80 hover:text-white cursor-pointer" :title="playerStore.isMuted ? 'Unmute' : 'Mute'">
+                <VolumeX v-if="playerStore.isMuted || playerStore.volume === 0" class="w-3 h-3 text-red-400" />
+                <Volume2 v-else class="w-3 h-3" />
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                :value="playerStore.isMuted ? 0 : playerStore.volume"
+                @input="(e) => playerStore.setVolume(Number((e.target as HTMLInputElement).value))"
+                class="w-12 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-lofi-pink"
+              />
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 
-    <!-- Curated 24/7 Lofi Stream Stations (Hidden in Cinema / Mini Video mode) -->
+    <!-- Curated 24/7 Lofi Stream Stations (Hidden in Cinema / Mini Video / Dock Video mode) -->
     <div
-      v-if="!ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      v-if="!isPureVideoMode"
       class="space-y-3"
     >
       <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
@@ -378,9 +453,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Saved YouTube Stream Bookmarks (Hidden in Cinema / Mini Video mode) -->
+    <!-- Saved YouTube Stream Bookmarks (Hidden in Cinema / Mini Video / Dock Video mode) -->
     <div
-      v-if="ytStore.bookmarks.length > 0 && !ytStore.isCinemaMode && !(appStore.isMiniPlayer && appStore.miniPlayerView === 'video')"
+      v-if="ytStore.bookmarks.length > 0 && !isPureVideoMode"
       class="space-y-3 pt-2"
     >
       <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
