@@ -41,10 +41,35 @@
 - [x] **Bug Fix:** YouTube Fullscreen & Cinema Mode Tab Overlap Fix ([task/cinema_fullscreen_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/cinema_fullscreen_fix_task.md))
 - [x] **Release 1.1.0:** Version Bump to 1.1.0 & Windows Build
 - [x] **Feature Addition:** To-Do App with JSON Database & Timestamps ([task/todo_app_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_app_task.md))
+- [ ] **Upcoming Feature:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [Planned / In Progress] - Task 12: Right Sidebar Dock Mode for To-Do & Music
+- **Plan Document:** [planning/dock_sidebar_mode.md](file:///d:/Source/github/sorinoi/lofi-player/planning/dock_sidebar_mode.md)
+- **Task Tracker:** [task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md)
+- **Task Summary:** พัฒนาระบบแถบข้างติดขอบจอขวา (Right Sidebar Dock Mode) ความกว้าง ~340px สูงเต็มจอ สำหรับเปิด To-Do List คู่กับตัวควบคุมเพลง Lofi และนาฬิกา Pomodoro ขณะทำงานบนหน้าจอฝั่งซ้าย
+- **Planned Work Breakdown (งานที่ต้องดำเนินการ):**
+  1. **Main Process Window Bounds & Multi-Monitor Calculation (`src/main/index.ts`):**
+     - คำนวณพิกัด `workArea` ของจอภาพปัจจุบันผ่าน Electron `screen` API
+     - กำหนด Bounds ความกว้าง 340px ความสูงเต็มจอขวา (`x = workArea.x + workArea.width - 340`, `y = workArea.y`)
+     - จัดการสลับ Always on Top และบันทึก/คืนค่า `normalBounds` เมื่อกดขยายกลับหน้าต่างปกติ
+  2. **Preload API Bindings (`src/preload/index.ts` & `src/preload/index.d.ts`):**
+     - Expose `enterDockMode`, `exitDockMode`, และ `toggleDockMode`
+  3. **App State Management (`src/renderer/src/stores/app.ts`):**
+     - เพิ่ม `isDockMode` state และฟังก์ชัน `toggleDockMode`
+  4. **Dedicated UI Component (`src/renderer/src/components/layout/DockSidebar.vue`):**
+     - Header: โลโก้, ปุ่ม Pin, ปุ่ม Expand `[⤢]`, ปุ่ม Minimize และ Close
+     - Compact Player: เล่น/หยุดเพลง, เลื่อนเพลง, ปรับเสียง และแสดงเวลานับถอยหลัง Pomodoro/Sleep Timer
+     - Full-Height Scrollable To-Do List: สถิติงาน, ช่องเพิ่มงานด่วน, ตัวกรองงาน, และรายการงานครบถ้วน
+     - Footer: ปุ่มกดขยายหน้าต่างแบบเต็มจอ
+  5. **Entry Points & App Layout Integration (`CustomTitlebar.vue`, `TodoView.vue`, `App.vue`):**
+     - เพิ่มปุ่ม `[📌 Dock Sidebar]` บน Titlebar และในหน้าต่าง To-Do
+     - เพิ่มคีย์ลัด <kbd>Alt</kbd> + <kbd>D</kbd>
+  6. **Verification & Build:**
+     - ตรวจสอบ `npm run typecheck` และคอมไพล์ Windows Installer ด้วย `npm run build:win`
 
 ### [2026-08-28] - Task 11: To-Do App with JSON Database
 - **Task:** พัฒนาระบบ **Focus Tasks & To-Do** จัดเก็บข้อมูลในไฟล์ JSON บนเครื่องผู้ใช้ พร้อมบันทึกวันที่สร้างและวันที่เสร็จ
