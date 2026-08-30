@@ -237,12 +237,12 @@ function enterDockMode(): boolean {
         x: currentBounds.x + currentBounds.width / 2,
         y: currentBounds.y + currentBounds.height / 2
       })
-      const { bounds } = display
+      const { bounds, workArea } = display
       mainWindow.setBounds({
         x: Math.round(bounds.x + bounds.width - DOCK_WIDTH),
-        y: Math.round(bounds.y),
+        y: Math.round(workArea.y),
         width: DOCK_WIDTH,
-        height: Math.round(bounds.height)
+        height: Math.round(workArea.height)
       })
     }
     mainWindow.setAlwaysOnTop(true)

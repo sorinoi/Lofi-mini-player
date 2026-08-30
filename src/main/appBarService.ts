@@ -114,12 +114,12 @@ class AppBarService {
         x: currentBounds.x + currentBounds.width / 2,
         y: currentBounds.y + currentBounds.height / 2
       })
-      const { bounds } = display
+      const { bounds, workArea } = display
 
       const targetX = Math.round(bounds.x + bounds.width - width)
-      const targetY = Math.round(bounds.y)
+      const targetY = Math.round(workArea.y)
       const targetWidth = Math.round(width)
-      const targetHeight = Math.round(bounds.height)
+      const targetHeight = Math.round(workArea.height)
 
       const abd: AppBarData = {
         cbSize: this.koffiInstance.sizeof(this.APPBARDATA_TYPE),

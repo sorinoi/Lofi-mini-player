@@ -6,8 +6,8 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md)
-- **Current Status:** 🟢 Completed & Ready (Dock Window Repositioning Verified)
+- **Task File:** [task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md)
+- **Current Status:** 🟢 Completed & Ready (Dock Sidebar Taskbar Overlap Fixed)
 
 ---
 
@@ -48,10 +48,23 @@
 - [x] **UI/UX Enhancement:** Adjust Dock Sidebar YouTube Video Height to 16:9 Aspect Ratio ([task/dock_sidebar_video_aspect_ratio_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_aspect_ratio_task.md))
 - [x] **Desktop Integration:** Windows Desktop Space Reservation (AppBar) for Dock Sidebar Mode ([task/appbar_screen_reservation_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/appbar_screen_reservation_task.md))
 - [x] **Bug Fix:** Fix Dock Sidebar Window Positioning in Reserved AppBar Space ([task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md))
+- [x] **Bug Fix:** Fix Windows Taskbar Overlapping Dock Sidebar Application ([task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-08-30] - Task 19: Fix Windows Taskbar Overlapping Dock Sidebar Application
+- **Plan Document:** [planning/dock_sidebar_taskbar_overlap_fix.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_taskbar_overlap_fix.md)
+- **Task Tracker:** [task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md)
+- **Task Summary:** แก้ไขปัญหา Windows Taskbar ด้านล่างทับแอปพลิเคชันในโหมด Dock Sidebar ทำให้มองไม่เห็นปุ่มควบคุมเสียง (Play/Pause, Volume, Seek) และวิดีโอ YouTube โดยปรับปรุงการคำนวณความสูงและพิกัดแกน Y จาก `display.workArea` แทนที่ความละเอียดเต็มจอ `display.bounds`
+- **Details:**
+  - ปรับปรุง [src/main/appBarService.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/appBarService.ts) โดยคำนวณ `targetY = Math.round(workArea.y)` และ `targetHeight = Math.round(workArea.height)` เพื่อให้ความสูงของหน้าต่างหยุดพอดีที่ขอบบนของ Windows Taskbar
+  - อัปเดตพิกัด `rc.top` และ `rc.bottom` ในการส่ง Win32 AppBar Message (`ABM_QUERYPOS` / `ABM_SETPOS`) ให้จองพื้นที่เฉพาะส่วน `workArea` ไม่ล้นลงไปในพื้นที่ของ Taskbar
+  - ปรับปรุง Fallback Positioning ใน [src/main/index.ts](file:///e:/Source/github/sorinoi/Lofi-mini-player/src/main/index.ts) ให้ใช้ `workArea.y` และ `workArea.height`
+  - ผ่านการทดสอบ Type Check `npm run typecheck` สำเร็จ 100% (0 errors)
+  - คอมไพล์โปรเจกต์ `npm run build` สำเร็จ 100% (0 errors)
+  - คอมไพล์และ Packaging ตัวติดตั้ง Windows `npm run build:win` สร้างไฟล์ `dist/Lofi Player Setup 1.1.0.exe` สำเร็จ 100% (0 errors)
 
 ### [2026-08-28] - Task 18: Fix Dock Sidebar Window Positioning in Reserved AppBar Space
 - **Plan Document:** [planning/dock_sidebar_position_fix.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_position_fix.md)
