@@ -105,7 +105,7 @@ function handleCancelEdit(): void {
           <!-- Category Badge -->
           <span
             :class="[
-              'px-2 py-0.5 rounded-full text-2xs font-semibold flex items-center gap-1 border',
+              'px-2 py-0.5 rounded-full text-2xs font-semibold flex items-center gap-1 border whitespace-nowrap flex-shrink-0',
               todo.category === 'study'
                 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
                 : todo.category === 'work'
@@ -125,7 +125,7 @@ function handleCancelEdit(): void {
           <!-- Priority Badge -->
           <span
             :class="[
-              'px-2 py-0.5 rounded-full text-2xs font-semibold flex items-center gap-1 border',
+              'px-2 py-0.5 rounded-full text-2xs font-semibold flex items-center gap-1 border whitespace-nowrap flex-shrink-0',
               todo.priority === 'high'
                 ? 'bg-red-500/15 text-red-300 border-red-500/30'
                 : todo.priority === 'medium'
@@ -145,7 +145,7 @@ function handleCancelEdit(): void {
           <!-- Done in Duration Badge -->
           <span
             v-if="todo.completed && todo.completedAt"
-            class="px-2 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1"
+            class="px-2 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1 whitespace-nowrap flex-shrink-0"
             title="Time taken to complete"
           >
             <Clock class="w-2.5 h-2.5" />

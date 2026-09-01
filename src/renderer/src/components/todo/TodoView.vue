@@ -94,47 +94,32 @@ onMounted(() => {
     </div>
 
     <!-- Quick Stats Cards Bar -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <!-- Total Tasks Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-lofi-card flex items-center justify-center text-lofi-text border border-lofi-border/50 flex-shrink-0">
-          <CheckSquare class="w-4.5 h-4.5 text-lofi-primary" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Total Tasks</p>
-          <p class="text-lg font-bold text-lofi-text">{{ todoStore.totalCount }}</p>
-        </div>
+      <div class="p-3 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-lofi-muted truncate">Total Tasks</span>
+        <span class="text-xl font-black text-lofi-text mt-1">{{ todoStore.totalCount }}</span>
       </div>
 
-      <!-- Pending Tasks Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 flex-shrink-0">
-          <Clock class="w-4.5 h-4.5 animate-pulse" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">In Progress</p>
-          <p class="text-lg font-bold text-amber-400">{{ todoStore.pendingCount }}</p>
-        </div>
+      <!-- In Progress / Pending Tasks Card -->
+      <div class="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-amber-400/90 truncate">In Progress</span>
+        <span class="text-xl font-black text-amber-400 mt-1">{{ todoStore.pendingCount }}</span>
       </div>
 
       <!-- Completed Tasks Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 flex-shrink-0">
-          <CheckCircle class="w-4.5 h-4.5" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Completed</p>
-          <p class="text-lg font-bold text-emerald-400">{{ todoStore.completedCount }}</p>
-        </div>
+      <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-400/90 truncate">Completed</span>
+        <span class="text-xl font-black text-emerald-400 mt-1">{{ todoStore.completedCount }}</span>
       </div>
 
       <!-- Completion Rate Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex flex-col justify-between backdrop-blur-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Progress</span>
+      <div class="p-3 rounded-2xl bg-lofi-primary/5 border border-lofi-primary/20 flex flex-col justify-between backdrop-blur-xs">
+        <div class="flex items-center justify-between gap-1">
+          <span class="text-2xs font-bold uppercase tracking-wider text-lofi-primary truncate">Progress</span>
           <span class="text-xs font-bold text-lofi-primary">{{ todoStore.completionRate }}%</span>
         </div>
-        <div class="w-full h-2 rounded-full bg-lofi-card border border-lofi-border/50 overflow-hidden mt-2">
+        <div class="w-full h-1.5 rounded-full bg-lofi-card border border-lofi-border/50 overflow-hidden mt-2">
           <div
             class="h-full bg-gradient-to-r from-lofi-primary to-emerald-400 transition-all duration-500 rounded-full"
             :style="{ width: `${todoStore.completionRate}%` }"

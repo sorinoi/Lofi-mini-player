@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added switchable mode tabs to the **Right Sidebar** in YouTube Player screen, allowing users to toggle between **Playlists & Stations**, **To-Do List**, and **Notes & Memos** with live pending task and note badges while the Left Column permanently displays the 16:9 YouTube video player.
+
+### Changed
+- Optimized Notes overview cards (Total Notes, Pinned Notes, Storage) by removing bulky icon boxes and applying color-coded typography, resolving text-wrapping issues in compact sidebar and dock views.
+- Optimized To-Do list status overview cards (Total Tasks, In Progress, Completed, Progress) by removing bulky icon boxes and applying color-coded typography and badges, resolving text-wrapping issues across compact sidebars and narrow windows.
+- Redesigned YouTube Stream Player layout to a 2-column desktop watch interface matching the YouTube web experience:
+  - **Left Column:** Dedicated primary video / visualizer player card (16:9 aspect ratio) with ambient glow, controls, and metadata underneath.
+  - **Right Sidebar:** Flexible multi-mode workspace for Curated Stations/Bookmarks, To-Do task management, or Notes while watching videos.
+- Refactored layout to fluid full-width (`w-full`), removing `max-w-6xl` constraints so content utilizes full screen real estate when maximized or in fullscreen.
+
 ## [1.1.1] - 2026-09-01
 
 ### Added

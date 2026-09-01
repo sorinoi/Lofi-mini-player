@@ -6,8 +6,8 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md)
-- **Current Status:** 🟢 Completed & Ready (YouTube Bookmarks JSON Database Persistence)
+- **Task File:** [task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md)
+- **Current Status:** 🟢 Completed & Ready (Note View Status Cards Typography & Layout Optimization)
 
 ---
 
@@ -50,6 +50,97 @@
 - [x] **Bug Fix:** Fix Dock Sidebar Window Positioning in Reserved AppBar Space ([task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md))
 - [x] **Bug Fix:** Fix Windows Taskbar Overlapping Dock Sidebar Application ([task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md))
 - [x] **Data Persistence:** YouTube Bookmarks JSON Database Persistence ([task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md))
+- [x] **UI/UX Enhancement:** YouTube Full-Width Layout for Fullscreen / Maximized Displays ([task/youtube_fullscreen_fullwidth_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_fullscreen_fullwidth_task.md))
+- [x] **UI/UX Redesign:** YouTube Watch-Style 2-Column Desktop Layout ([task/youtube_watch_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_watch_layout_task.md))
+- [x] **Feature Addition:** YouTube Right Sidebar Switchable Modes (Playlists, To-Do, Notes) ([task/youtube_right_sidebar_modes_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_right_sidebar_modes_task.md))
+- [x] **UI/UX Enhancement:** Todo View Status Cards Typography & Layout Optimization ([task/todo_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_status_typography_task.md))
+- [x] **UI/UX Enhancement:** Note View Status Cards Typography & Layout Optimization ([task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md))
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 26: Note View Status Cards Typography & Layout Optimization
+- **Task Tracker:** [task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md)
+- **Task Summary:** ปรับปรุงการแสดงผลการ์ดสรุปสถานะของ Notes (Total Notes, Pinned Notes, Storage) โดยนำกล่องไอคอนขนาดใหญ่ออก และจัดวางด้วยตัวอักษรและตัวเลขสีที่คมชัด เพื่อแก้ปัญหาข้อความขึ้นบรรทัดใหม่/ตัวหนังสือตกเมื่อแสดงใน Sidebar หรือหน้าต่างขนาดกะทัดรัด
+- **Details:**
+  - นำกล่องไอคอนออกจาก Quick Stats Cards ใน [src/renderer/src/components/notes/NoteView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteView.vue)
+  - ปรับใช้ Color-Coded Typography: Total Notes (สีกลาง/ขาว), Pinned Notes (สีเหลืองอำพัน Amber), และ Storage (สีเขียวมรกต Emerald)
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 25: Todo View Status Cards Typography & Layout Optimization
+- **Task Tracker:** [task/todo_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_status_typography_task.md)
+- **Task Summary:** ปรับปรุงการแสดงผลการ์ดสรุปสถานะของ To-Do List (Total Tasks, In Progress, Completed, Progress) โดยนำกล่องไอคอนขนาดใหญ่ออก และจัดวางด้วยตัวอักษรและตัวเลขสีที่คมชัด เพื่อแก้ปัญหาข้อความขึ้นบรรทัดใหม่/ตัวหนังสือตกเมื่อแสดงใน Sidebar หรือหน้าจอขนาดกะทัดรัด
+- **Details:**
+  - นำกล่องไอคอนออกจาก Quick Stats Cards ใน [src/renderer/src/components/todo/TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue)
+  - ปรับใช้ Color-Coded Typography: Total (สีกลาง/ขาว), In Progress (สีส้มอำพัน Amber), Completed (สีเขียวมรกต Emerald), และ Progress (สีหลัก Cyan/Pink)
+  - เพิ่ม `whitespace-nowrap flex-shrink-0` ใน [src/renderer/src/components/todo/TodoItemCard.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoItemCard.vue) ป้องกันข้อความใน Badge หักบรรทัด
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 24: YouTube Right Sidebar Switchable Modes (Playlists, To-Do, Notes)
+- **Task Tracker:** [task/youtube_right_sidebar_modes_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_right_sidebar_modes_task.md)
+- **Task Summary:** ปรับปรุงเลย์เอาต์หน้าจอ YouTube Stream Player โดยคงการแสดงผลเครื่องเล่นวิดีโอ 16:9 ขนาดใหญ่ไว้ที่ฝั่งซ้ายอย่างต่อเนื่อง และย้ายระบบสลับโหมดไปยัง Sidebar ฝั่งขวา เพื่อให้ผู้ใช้สามารถเลือกดูได้ระหว่าง **Playlists & Stations**, **To-Do List**, หรือ **Notes & Memos** ขณะรับชมวิดีโอ
+- **Details:**
+  - กำหนดให้ฝั่งซ้ายแสดงเครื่องเล่นวิดีโอ 16:9 และ VU Visualizer พร้อมแผงควบคุมและข้อมูลสตรีมตลอดเวลา
+  - ย้าย Tab Pills ไปยัง Sidebar ฝั่งขวา (`lg:w-[420px] xl:w-[480px] 2xl:w-[540px]`) สำหรับสลับ 3 โหมดพร้อม Badge แจ้งเตือน
+  - ฝังคอมโพเนนต์ [src/renderer/src/components/todo/TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue) และ [src/renderer/src/components/notes/NoteView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteView.vue) ภายใน Sidebar ฝั่งขวา
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 23: YouTube Left Panel Switchable Modes (Player, To-Do, Notes)
+- **Task Tracker:** [task/youtube_left_panel_modes_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_left_panel_modes_task.md)
+- **Task Summary:** เพิ่มฟังก์ชันสลับโหมดการแสดงผลของพื้นที่ฝั่งซ้ายในหน้า YouTube Stream Player ให้ผู้ใช้สามารถเลือกดูได้ระหว่าง **Video & Visualizer**, **Focus To-Do**, หรือ **Notes & Memos** โดยที่เสียงสตรีม YouTube ยังคงเล่นต่อเนื่องไม่มีสะดุด
+- **Details:**
+  - เพิ่ม Tab Pills Switcher สำหรับสลับโหมด 3 โหมดพร้อม Badge แสดงจำนวนงานคงค้างและจำนวนโน้ต
+  - ฝังคอมโพเนนต์ [src/renderer/src/components/todo/TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue) และ [src/renderer/src/components/notes/NoteView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteView.vue) ในฝั่งซ้าย
+  - ใช้คลาส `.invisible-player` ซ่อน IFrame ไว้เบื้องหลังอย่างต่อเนื่องเมื่อผู้ใช้สลับไปใช้งาน To-Do หรือ Notes เพื่อไม่ให้เสียงเพลงหยุด
+  - เพิ่มแถบควบคุมเสียงขนาดกะทัดรัด (Mini Audio HUD) พร้อมปุ่ม Play/Pause ในโหมด To-Do และ Notes
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 22: YouTube Watch-Style 2-Column Desktop Layout
+- **Task Tracker:** [task/youtube_watch_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_watch_layout_task.md)
+- **Task Summary:** ปรับปรุงเลย์เอาต์หน้าจอ YouTube Stream Player ให้เป็นรูปแบบ 2 คอลัมน์สไตล์ YouTube Watch Page โดยแสดงเครื่องเล่นวิดีโอขนาดใหญ่ไว้ฝั่งซ้าย และย้าย Playlist (Curated Stations และ Saved Bookmarks) ไปไว้ใน Sidebar ฝั่งขวา
+- **Details:**
+  - ปรับปรุง [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) จัดโครงสร้างแบบ 2 คอลัมน์ (`flex flex-col lg:flex-row gap-6`)
+  - ย้ายแถบข้อมูลและปุ่มควบคุมเครื่องเล่น (Title, Channel, Mode Switcher, Cinema, Bookmark) ไว้ใต้กรอบวิดีโอ 16:9 ในฝั่งซ้าย
+  - จัดการแสดงผลสถานีแนะนำ (Curated Stations) และบุ๊กมาร์ก (Saved Bookmarks) เป็นการ์ดแนวนอนขนาดกะทัดรัดเรียงเป็นคิวใน Sidebar ฝั่งขวา
+  - รักษาสถานะ DOM ของ `#youtube-player-element` ไม่ให้เกิดการ Reload หรือตัดขาดเสียงเมื่อสลับโหมด
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 21: YouTube Full-Width Layout for Fullscreen / Maximized Displays
+- **Plan Document:** [planning/youtube_fullscreen_fullwidth.md](file:///d:/Source/github/sorinoi/lofi-player/planning/youtube_fullscreen_fullwidth.md)
+- **Task Tracker:** [task/youtube_fullscreen_fullwidth_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_fullscreen_fullwidth_task.md)
+- **Task Summary:** ปรับปรุงเลย์เอาต์หน้าจอ YouTube Stream Player ให้แสดงผลเต็มความกว้างของหน้าจอ (Full-Width) เมื่อเปิดในโหมดเต็มจอ หรือขยายหน้าต่างแบบ Maximized โดยปลดล็อกข้อจำกัด `max-w-6xl mx-auto` และปรับ Responsive Grid ให้รองรับการแสดงผลสูงสุด 6 คอลัมน์
+- **Details:**
+  - ปรับปรุง [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) ใช้คลาส `w-full` พร้อมจัดระยะขอบแบบยืดหยุ่น
+  - ขยาย Grid ของ Curated 24/7 Lofi Stations และ Saved Bookmarks เป็น `sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6`
+  - ปรับขนาดช่องค้นหาและวางลิงก์ YouTube เป็น `max-w-xl`
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
 
 ---
 

@@ -82,38 +82,23 @@ onMounted(() => {
     </div>
 
     <!-- Quick Stats Cards Bar -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+    <div class="grid grid-cols-3 gap-3">
       <!-- Total Notes Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-lofi-card flex items-center justify-center text-lofi-text border border-lofi-border/50 flex-shrink-0">
-          <StickyNote class="w-4.5 h-4.5 text-amber-400" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Total Notes</p>
-          <p class="text-lg font-bold text-lofi-text">{{ noteStore.totalCount }}</p>
-        </div>
+      <div class="p-3 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-lofi-muted truncate">Total Notes</span>
+        <span class="text-xl font-black text-lofi-text mt-1">{{ noteStore.totalCount }}</span>
       </div>
 
       <!-- Pinned Notes Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 flex-shrink-0">
-          <Pin class="w-4.5 h-4.5" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Pinned Notes</p>
-          <p class="text-lg font-bold text-amber-400">{{ noteStore.pinnedCount }}</p>
-        </div>
+      <div class="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-amber-400/90 truncate">Pinned Notes</span>
+        <span class="text-xl font-black text-amber-400 mt-1">{{ noteStore.pinnedCount }}</span>
       </div>
 
       <!-- Database Status Card -->
-      <div class="p-3.5 rounded-2xl bg-lofi-surface/60 border border-lofi-border/70 flex items-center gap-3 backdrop-blur-xs">
-        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 flex-shrink-0">
-          <Check class="w-4.5 h-4.5" />
-        </div>
-        <div>
-          <p class="text-2xs text-lofi-muted uppercase font-bold tracking-wider">Storage</p>
-          <p class="text-xs font-bold text-emerald-400 font-mono">notes.json (Synced)</p>
-        </div>
+      <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col justify-between backdrop-blur-xs">
+        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-400/90 truncate">Storage</span>
+        <span class="text-xs font-bold text-emerald-400 font-mono mt-1 truncate">notes.json (Synced)</span>
       </div>
     </div>
 
