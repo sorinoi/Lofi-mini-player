@@ -7,6 +7,7 @@ import * as mm from 'music-metadata'
 import { resolveYouTubeUrl, fetchYouTubeMetadata } from './youtubeResolver'
 import { loadTodosFromFile, saveTodosToFile, openTodosFolder, TodoItem } from './todoStorage'
 import { loadNotesFromFile, saveNotesToFile, openNotesFolder, NoteItem } from './noteStorage'
+import { loadYouTubeBookmarksFromFile, saveYouTubeBookmarksToFile, openYouTubeBookmarksFolder, YouTubeBookmarkItem } from './youtubeBookmarkStorage'
 import { appBarService } from './appBarService'
 
 // Disable user gesture requirement for media autoplay in Chromium
@@ -397,6 +398,19 @@ ipcMain.handle('notes:save', async (_, notes: NoteItem[]) => {
 
 ipcMain.handle('notes:openFolder', async () => {
   openNotesFolder()
+})
+
+// IPC Handlers for JSON-based YouTube Bookmarks
+ipcMain.handle('youtube:loadBookmarks', async () => {
+  return loadYouTubeBookmarksFromFile()
+})
+
+ipcMain.handle('youtube:saveBookmarks', async (_, bookmarks: YouTubeBookmarkItem[]) => {
+  return saveYouTubeBookmarksToFile(bookmarks)
+})
+
+ipcMain.handle('youtube:openBookmarksFolder', async () => {
+  openYouTubeBookmarksFolder()
 })
 
 app.whenReady().then(() => {

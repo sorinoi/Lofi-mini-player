@@ -18,7 +18,8 @@ import {
   Target,
   Moon,
   Volume2,
-  VolumeX
+  VolumeX,
+  FileJson
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { useYouTubeStore } from '../../stores/youtube'
@@ -458,9 +459,19 @@ onUnmounted(() => {
       v-if="ytStore.bookmarks.length > 0 && !isPureVideoMode"
       class="space-y-3 pt-2"
     >
-      <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
-        <Bookmark class="w-4 h-4 text-lofi-primary" />
-        <span>Your Saved Stream Bookmarks:</span>
+      <div class="flex items-center justify-between text-xs font-semibold text-lofi-muted">
+        <div class="flex items-center gap-2">
+          <Bookmark class="w-4 h-4 text-lofi-primary" />
+          <span>Your Saved Stream Bookmarks:</span>
+        </div>
+        <button
+          @click="ytStore.openBookmarksFolder"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-lofi-surface/60 hover:bg-lofi-card text-lofi-muted hover:text-lofi-text border border-lofi-border/60 transition-all active:scale-95 cursor-pointer group"
+          title="Open youtube_bookmarks.json location on disk"
+        >
+          <FileJson class="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform" />
+          <span class="text-2xs font-medium">Open JSON File</span>
+        </button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">

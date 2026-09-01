@@ -34,23 +34,40 @@ export const useYouTubeStore = defineStore('youtube', () => {
     isBookmarked.value = bookmarks.value.some((b) => b.videoId === currentVideoId.value)
   }
 
-  async function initBookmarks(): Promise<void> {
-    const saved = await storageService.getYouTubeBookmarks()
-    if (saved && saved.length > 0) {
-      bookmarks.value = saved
-    } else {
-      // Initialize with presets as starter bookmarks
-      bookmarks.value = YOUTUBE_LOFI_PRESETS.map((p) => ({
-        id: p.id,
-        videoId: p.videoId,
-        title: p.title,
-        channel: p.channel,
-        thumbnailUrl: p.thumbnailUrl,
-        addedAt: Date.now()
-      }))
-      await storageService.saveYouTubeBookmarks(bookmarks.value)
+  async function persistBookmarks(): Promise<void> {
+    try {
+      const plainData = JSON.parse(JSON.stringify(bookmarks.value))
+      if (window.api?.saveYouTubeBookmarks) {
+        await window.api.saveYouTubeBookmarks(plainData)
+      }
+      await storageService.saveYouTubeBookmarks(plainData)
+    } catch (e) {
+      console.warn('[YouTubeStore] Failed to persist bookmarks to JSON file:', e)
     }
-    checkIfBookmarked()
+  }
+
+  async function initBookmarks(): Promise<void> {
+    try {
+      const saved = await storageService.getYouTubeBookmarks()
+      if (Array.isArray(saved) && saved.length > 0) {
+        bookmarks.value = saved
+      } else if (bookmarks.value.length === 0) {
+        // Initialize with presets as starter bookmarks only if store is empty
+        bookmarks.value = YOUTUBE_LOFI_PRESETS.map((p) => ({
+          id: p.id,
+          videoId: p.videoId,
+          title: p.title,
+          channel: p.channel,
+          thumbnailUrl: p.thumbnailUrl,
+          addedAt: Date.now()
+        }))
+        await persistBookmarks()
+      }
+    } catch (e) {
+      console.warn('[YouTubeStore] Failed to initialize bookmarks:', e)
+    } finally {
+      checkIfBookmarked()
+    }
   }
 
   function playPreset(preset: YouTubeStreamPreset): void {
@@ -167,13 +184,19 @@ export const useYouTubeStore = defineStore('youtube', () => {
       })
     }
     checkIfBookmarked()
-    await storageService.saveYouTubeBookmarks(bookmarks.value)
+    await persistBookmarks()
   }
 
   async function deleteBookmark(videoId: string): Promise<void> {
     bookmarks.value = bookmarks.value.filter((b) => b.videoId !== videoId)
     checkIfBookmarked()
-    await storageService.saveYouTubeBookmarks(bookmarks.value)
+    await persistBookmarks()
+  }
+
+  function openBookmarksFolder(): void {
+    if (window.api?.openYouTubeBookmarksFolder) {
+      window.api.openYouTubeBookmarksFolder()
+    }
   }
 
   function clearError(): void {
@@ -201,6 +224,7 @@ export const useYouTubeStore = defineStore('youtube', () => {
     toggleCinemaMode,
     toggleBookmark,
     deleteBookmark,
+    openBookmarksFolder,
     clearError
   }
 })

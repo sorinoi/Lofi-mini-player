@@ -101,6 +101,7 @@ onMounted(async () => {
   await libraryStore.initLibrary()
   await todoStore.initTodos()
   await noteStore.initNotes()
+  await ytStore.initBookmarks()
   if (libraryStore.tracks.length > 0 && playerStore.playlist.length === 0) {
     playerStore.playlist = [...libraryStore.tracks]
   }

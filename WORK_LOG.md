@@ -6,15 +6,15 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md)
-- **Current Status:** 🟢 Completed & Ready (Dock Sidebar Taskbar Overlap Fixed)
+- **Task File:** [task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md)
+- **Current Status:** 🟢 Completed & Ready (YouTube Bookmarks JSON Database Persistence)
 
 ---
 
 ## 📌 Project Overview & Goals
-- **Project:** Lofi Music Player Desktop App (v1.1.0)
+- **Project:** Lofi Music Player Desktop App (v1.1.1)
 - **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, koffi, electron-builder
-- **Status:** 🟢 Released (Version 1.1.0 Setup Installer Ready)
+- **Status:** 🟢 Released (Version 1.1.1 Ready)
 
 ---
 
@@ -49,10 +49,24 @@
 - [x] **Desktop Integration:** Windows Desktop Space Reservation (AppBar) for Dock Sidebar Mode ([task/appbar_screen_reservation_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/appbar_screen_reservation_task.md))
 - [x] **Bug Fix:** Fix Dock Sidebar Window Positioning in Reserved AppBar Space ([task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md))
 - [x] **Bug Fix:** Fix Windows Taskbar Overlapping Dock Sidebar Application ([task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md))
+- [x] **Data Persistence:** YouTube Bookmarks JSON Database Persistence ([task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md))
 
 ---
 
 ## 📝 Activity & Changelog
+
+### [2026-09-01] - Task 20: YouTube Bookmarks JSON Database Persistence
+- **Plan Document:** [planning/youtube_bookmark_persistence.md](file:///d:/Source/github/sorinoi/lofi-player/planning/youtube_bookmark_persistence.md)
+- **Task Tracker:** [task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md)
+- **Task Summary:** พัฒนาระบบบันทึก YouTube Bookmarks ลงในฐานข้อมูลไฟล์ JSON (`%APPDATA%/lofi-player/youtube_bookmarks.json`) ผ่าน Electron Main Process IPC แก้ปัญหาบุ๊กมาร์กหายเมื่อปิดและเปิดโปรแกรมใหม่
+- **Details:**
+  - สร้างโมดูล [src/main/youtubeBookmarkStorage.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/youtubeBookmarkStorage.ts) รองรับการโหลด/บันทึกไฟล์ JSON และเปิดโฟลเดอร์ใน Explorer
+  - ลงทะเบียน IPC Handlers (`youtube:loadBookmarks`, `youtube:saveBookmarks`, `youtube:openBookmarksFolder`) ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts)
+  - เชื่อมต่อ Preload Bridge [src/preload/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/preload/index.ts)
+  - อัปเดต [src/renderer/src/services/storageService.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/services/storageService.ts) และ [src/renderer/src/stores/youtube.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/youtube.ts) ให้ซิงค์สถานะกับไฟล์ JSON แบบทันที
+  - เพิ่มปุ่ม "Open JSON File" ใน [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue)
+  - เพิ่มการโหลดบุ๊กมาร์กตั้งแต่เริ่มแอปใน [src/renderer/src/App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue)
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) และ Build (`npm run build`) สำเร็จ 100% (0 errors)
 
 ### [2026-08-30] - Task 19: Fix Windows Taskbar Overlapping Dock Sidebar Application
 - **Plan Document:** [planning/dock_sidebar_taskbar_overlap_fix.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/planning/dock_sidebar_taskbar_overlap_fix.md)

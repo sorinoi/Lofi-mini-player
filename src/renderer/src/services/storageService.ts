@@ -76,18 +76,29 @@ export const storageService = {
   // YouTube Bookmarks
   async getYouTubeBookmarks(): Promise<any[]> {
     try {
+      if (window.api?.loadYouTubeBookmarks) {
+        const bms = await window.api.loadYouTubeBookmarks()
+        if (Array.isArray(bms)) {
+          return bms
+        }
+      }
       const bms = await get<any[]>(STORAGE_KEYS.YOUTUBE_BOOKMARKS)
       return bms || []
     } catch (e) {
+      console.warn('Failed to load YouTube bookmarks:', e)
       return []
     }
   },
 
   async saveYouTubeBookmarks(bookmarks: any[]): Promise<void> {
     try {
-      await set(STORAGE_KEYS.YOUTUBE_BOOKMARKS, bookmarks)
+      const plainData = JSON.parse(JSON.stringify(bookmarks))
+      if (window.api?.saveYouTubeBookmarks) {
+        await window.api.saveYouTubeBookmarks(plainData)
+      }
+      await set(STORAGE_KEYS.YOUTUBE_BOOKMARKS, plainData)
     } catch (e) {
-      console.warn('Failed to save bookmarks:', e)
+      console.warn('Failed to save YouTube bookmarks:', e)
     }
   }
 }

@@ -104,5 +104,23 @@ This document defines the core operating procedures, workflow standards, and com
 
 ---
 
-## 6. Blockers, Ambiguity & Inquiries
+## 6. Changelog & Release Notes Protocol (`CHANGELOG.md`)
+- **Standard Format:** All release notes and version history must adhere strictly to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and [Semantic Versioning (SemVer)](https://semver.org/).
+- **File Location:** Maintained at the root directory: [CHANGELOG.md](file:///d:/Source/github/sorinoi/lofi-player/CHANGELOG.md).
+- **Standard Change Categories:** Group all updates under the following subheadings:
+  - `### Added`: For new features, screens, or capabilities.
+  - `### Changed`: For changes in existing functionality, performance improvements, or UI/UX redesigns.
+  - `### Deprecated`: For soon-to-be removed features.
+  - `### Removed`: For features, dependencies, or modules removed.
+  - `### Fixed`: For bug fixes and issue resolutions.
+  - `### Security`: For vulnerability patches and security enhancements.
+- **Update Frequency & Version Bumping:**
+  1. **During Active Development:** Document completed, verified features and fixes under the `## [Unreleased]` section at the top of the file.
+  2. **Release Version Cut:** When preparing a new release (bumping the version in `package.json`), convert the `[Unreleased]` section into a new version header with the release date (e.g., `## [1.2.0] - YYYY-MM-DD`) and reset a blank `## [Unreleased]` section above it.
+- **Order:** Keep versions in reverse chronological order (newest version at the top).
+
+---
+
+## 7. Blockers, Ambiguity & Inquiries
 - **Ask Before Guessing:** If you encounter blockers, insufficient information, architectural ambiguity, or unexpected errors, **always pause and ask the user for clarification** before proceeding or making assumptions.
+

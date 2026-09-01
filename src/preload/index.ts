@@ -40,7 +40,12 @@ export const api = {
   // JSON-based Note Record / Quick Notes
   loadNotes: (): Promise<any[]> => ipcRenderer.invoke('notes:load'),
   saveNotes: (notes: any[]): Promise<boolean> => ipcRenderer.invoke('notes:save', notes),
-  openNotesFolder: (): Promise<void> => ipcRenderer.invoke('notes:openFolder')
+  openNotesFolder: (): Promise<void> => ipcRenderer.invoke('notes:openFolder'),
+
+  // JSON-based YouTube Bookmarks
+  loadYouTubeBookmarks: (): Promise<any[]> => ipcRenderer.invoke('youtube:loadBookmarks'),
+  saveYouTubeBookmarks: (bookmarks: any[]): Promise<boolean> => ipcRenderer.invoke('youtube:saveBookmarks', bookmarks),
+  openYouTubeBookmarksFolder: (): Promise<void> => ipcRenderer.invoke('youtube:openBookmarksFolder')
 }
 
 export type IElectronAPI = typeof api
