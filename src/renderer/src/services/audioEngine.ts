@@ -75,10 +75,15 @@ class AudioEngine {
   }
 
   /**
-   * Generates rhythmic, natural lofi spectral data for external audio streams
+   * Generates rhythmic, natural lofi spectral data for external audio streams (cached per frame)
    */
   private generateSyntheticAudioData(): void {
     const now = performance.now()
+    // Skip redundant computations if already computed in the current render frame (<10ms)
+    if (now - this.lastTimestamp < 10) {
+      return
+    }
+
     const dt = Math.min(0.1, (now - this.lastTimestamp) / 1000)
     this.lastTimestamp = now
 

@@ -184,7 +184,7 @@ class YouTubeService {
 
       try {
         this.player = new window.YT.Player(elementId, {
-          host: 'https://www.youtube-nocookie.com',
+          host: 'https://www.youtube.com',
           videoId,
           width: '100%',
           height: '100%',
@@ -196,7 +196,9 @@ class YouTubeService {
             modestbranding: 1,
             iv_load_policy: 3,
             origin: effectiveOrigin,
-            playsinline: 1
+            widget_referrer: effectiveOrigin,
+            playsinline: 1,
+            disablekb: 0
           },
           events: {
             onReady: (event: any) => {

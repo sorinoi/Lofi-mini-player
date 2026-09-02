@@ -7,7 +7,8 @@ export const useAppStore = defineStore('app', () => {
   const isDockMode = ref(false)
   const dockMiniPlayerView = ref<'music' | 'vu' | 'timer' | 'video'>('music')
   const activeTab = ref<'player' | 'library' | 'youtube' | 'ambient' | 'todo' | 'notes' | 'settings'>('player')
-  const visualizerMode = ref<'analog_vu' | 'frequency_bars' | 'circular_pulse' | 'pixel_wave'>('frequency_bars')
+  const visualizerMode = ref<'analog_vu' | 'frequency_bars' | 'circular_pulse' | 'pixel_wave' | 'floating_bubbles'>('frequency_bars')
+  const showRightSidebar = ref<boolean>(true)
 
   async function toggleMiniPlayer(): Promise<void> {
     if (!isMiniPlayer.value) {
@@ -63,8 +64,16 @@ export const useAppStore = defineStore('app', () => {
     activeTab.value = tab
   }
 
-  function setVisualizerMode(mode: 'analog_vu' | 'frequency_bars' | 'circular_pulse' | 'pixel_wave'): void {
+  function setVisualizerMode(mode: 'analog_vu' | 'frequency_bars' | 'circular_pulse' | 'pixel_wave' | 'floating_bubbles'): void {
     visualizerMode.value = mode
+  }
+
+  function toggleRightSidebar(): void {
+    showRightSidebar.value = !showRightSidebar.value
+  }
+
+  function setRightSidebar(show: boolean): void {
+    showRightSidebar.value = show
   }
 
   return {
@@ -74,6 +83,7 @@ export const useAppStore = defineStore('app', () => {
     dockMiniPlayerView,
     activeTab,
     visualizerMode,
+    showRightSidebar,
     toggleMiniPlayer,
     setMiniPlayerView,
     enterDockMode,
@@ -81,6 +91,8 @@ export const useAppStore = defineStore('app', () => {
     toggleDockMode,
     setDockMiniPlayerView,
     setActiveTab,
-    setVisualizerMode
+    setVisualizerMode,
+    toggleRightSidebar,
+    setRightSidebar
   }
 })

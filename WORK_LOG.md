@@ -6,15 +6,15 @@
 
 ## 🎯 Active Task Pointer
 - **Current Task:** None (All planned tasks completed)
-- **Task File:** [task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md)
-- **Current Status:** 🟢 Completed & Ready (Note View Status Cards Typography & Layout Optimization)
+- **Task File:** [task/youtube_stutter_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_stutter_fix_task.md)
+- **Current Status:** 🟢 Completed & Ready (YouTube Streaming Performance & Stuttering Fix)
 
 ---
 
 ## 📌 Project Overview & Goals
-- **Project:** Lofi Music Player Desktop App (v1.1.1)
+- **Project:** Lofi Music Player Desktop App (v1.1.2)
 - **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, koffi, electron-builder
-- **Status:** 🟢 Released (Version 1.1.1 Ready)
+- **Status:** 🟢 Released (Version 1.1.2 Ready)
 
 ---
 
@@ -55,6 +55,159 @@
 - [x] **Feature Addition:** YouTube Right Sidebar Switchable Modes (Playlists, To-Do, Notes) ([task/youtube_right_sidebar_modes_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_right_sidebar_modes_task.md))
 - [x] **UI/UX Enhancement:** Todo View Status Cards Typography & Layout Optimization ([task/todo_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_status_typography_task.md))
 - [x] **UI/UX Enhancement:** Note View Status Cards Typography & Layout Optimization ([task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md))
+- [x] **Performance Optimization:** YouTube Playback Performance & Hardware Acceleration Optimization ([task/youtube_performance_optimization_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_performance_optimization_task.md))
+- [x] **UI/UX Redesign:** Unified Full-Width 2-Column Layout Across All Functions ([task/unified_two_column_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/unified_two_column_layout_task.md))
+- [x] **Visualizer Feature:** Bubble Flow (Rising Water Bubbles) Visualizer Mode ([task/bubble_visualizer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/bubble_visualizer_task.md))
+- [x] **UI/UX Enhancement:** Global Toggleable Right Sidebar Workspace Panel
+- [x] **Performance & Visual Optimization:** Pixel Wave Animation Smoothing & Harmonic Physics
+- [x] **UI/UX Enhancement:** Fullscreen & Maximized Responsive Dynamic Visualizer Scaling
+- [x] **Feature Addition:** Large Digital Focus & Sleep Clock Widget on Left Sidebar Bottom
+- [x] **Performance Optimization:** YouTube Streaming Performance & Stuttering Fix ([task/youtube_stutter_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_stutter_fix_task.md))
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-02] - Task 34: YouTube Streaming Performance & Stuttering Fix
+- **Task Tracker:** [task/youtube_stutter_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_stutter_fix_task.md)
+- **Task Summary:** แก้ไขปัญหาการกระตุกของการสตรีม YouTube โดยเปิดใช้งานการเร่งความเร็วการถอดรหัสวิดีโอระดับฮาร์ดแวร์ (Chromium Hardware Video Decoding), สลับ Endpoint ไปใช้ `www.youtube.com`, เพิ่มระบบหยุดการเรนเดอร์ชั่วคราวของ Visualizer ที่ถูกซ่อน (Background Canvas Visibility Gating), และแยกเลเยอร์ GPU Compositing ของ iframe
+- **Details:**
+  - เพิ่ม Chromium Switches ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts): `VaapiVideoDecoder,AcceleratedVideoDecode,AcceleratedVideoEncoder,CanvasOopRasterization`, `enable-accelerated-video-decode`, `enable-accelerated-mjpeg-decode`, `disable-software-rasterizer`, พร้อมเปิด `experimentalFeatures: true` ใน `webPreferences`
+  - สลับ Host ใน [src/renderer/src/services/youtubeService.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/services/youtubeService.ts) จาก `youtube-nocookie.com` เป็น `https://www.youtube.com` เพื่อลด Latency และเพิ่มความเร็ว DASH Buffer สตรีมสด
+  - เพิ่ม Visibility Gating ใน Visualizer ทุกตัว ([AnalogVuMeter.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/AnalogVuMeter.vue), [FrequencyBars.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/FrequencyBars.vue), [CircularPulse.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/CircularPulse.vue), [PixelWave.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/PixelWave.vue), [FloatingBubbles.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/FloatingBubbles.vue)) เพื่อหยุดลูปคำนวณและวาดภาพ 60fps ทันทีเมื่อถูกซ่อน
+  - ใส่ Timestamp Cache ใน [src/renderer/src/services/audioEngine.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/services/audioEngine.ts) ป้องกันการคำนวณคลื่นเสียงซ้ำซ้อนในเฟรมเดียวกัน
+  - ปรับแต่ง GPU Layer Isolation (`contain: strict;`, `transform: translateZ(0);`) ใน [YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) และ [App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue)
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+### [2026-09-02] - Task 33: Large Digital Focus & Sleep Clock Widget on Left Sidebar Bottom
+- **Task Summary:** เพิ่มนาฬิกาดิจิทัลขนาดใหญ่ (High-Contrast Large Digital Clock Widget) แสดงเวลานับถอยหลัง Focus Session / Break Time / Sleep Timer อย่างชัดเจนบริเวณด้านล่างของ Left Navigation Sidebar เมื่อมีการตั้งหรือเริ่มจับเวลา
+- **Details:**
+  - ปรับปรุง [src/renderer/src/App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) เพิ่มการ์ดนาฬิกาดิจิทัลเรืองแสง (Backdrop Glow & High-Contrast Typography) ขนาดใหญ่คมชัด (`font-black text-2xl md:text-3xl font-mono text-white`)
+  - มีแถบ Progress Bar แสดงเปอร์เซ็นต์เวลาที่ผ่านไปแบบเรียลไทม์ พร้อมสีแยกตามโหมด (Pink = Focus Session, Emerald = Break Time, Purple = Sleep Timer)
+  - มีปุ่มควบคุมลัด (Pause/Resume, Reset, Cancel Sleep Timer) และกดที่ตัวการ์ดเพื่อเปิดหน้าต่างตั้งค่าเวลาตัวเต็มได้ทันที
+  - เมื่อไม่มีการจับเวลา จะแสดงผลเป็นปุ่ม Focus Timer ขนาดกะทัดรัดแบบเดิมโดยอัตโนมัติ
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+### [2026-09-02] - Task 32: Fullscreen & Maximized Responsive Dynamic Visualizer Scaling
+- **Task Summary:** ปรับปรุงและปลดล็อกข้อจำกัดขนาดความสูง (`max-h-56`) ของคอมโพเนนต์ Visualizer ทุกตัว พร้อมปรับระบบคำนวณสเกลแบบไดนามิก (Proportional Responsive Scaling) ให้ขยายยาวเต็มพื้นที่ความสูงหน้าจอในโหมดเต็มจอ / ขยายหน้าต่าง (Maximized / Fullscreen)
+- **Details:**
+  - ปลดล็อกข้อจำกัดความสูง `max-h-56` (224px) ใน [AnalogVuMeter.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/AnalogVuMeter.vue), [FrequencyBars.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/FrequencyBars.vue), [CircularPulse.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/CircularPulse.vue), และ [PixelWave.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/PixelWave.vue) ให้ขยายเต็มความสูงของคอนเทนเนอร์ (`w-full h-full min-h-[260px]`)
+  - ปรับระบบคำนวณขนาดเกจ์เข็มคู่ใน [AnalogVuMeter.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/AnalogVuMeter.vue) ให้ขยายใหญ่ตามสัดส่วน Aspect Ratio (270:160) ของ Canvas แทนการจำกัดขนาดคงที่ (Fixed 270x160)
+  - ปรับขนาดแผ่นไวนิลและรัศมีคลื่นใน [CircularPulse.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/CircularPulse.vue) ให้ขยายตามสัดส่วนของขนาด Canvas อัตโนมัติ
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+### [2026-09-02] - Task 31: Pixel Wave Animation Smoothing & Harmonic Physics
+- **Task Summary:** ปรับปรุงความลื่นไหลของโหมด Pixel Wave Visualizer โดยนำระบบ Exponential Moving Average (Attack/Decay Smoothing) มาช่วยลดอาการกระตุก/สั่นไหวของคลื่นเสียง พร้อมเพิ่มคลื่นสะท้อนเงาใต้น้ำ (Mirror Reflection) และจุดยอดกราฟ (Floating Peak Dots)
+- **Details:**
+  - ปรับปรุง [src/renderer/src/components/visualizers/PixelWave.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/PixelWave.vue) โดยแทนที่การดึงข้อมูล Time Domain แบบดิบ ด้วยระบบประมวลผลคลื่นผสมผสาน Frequency Envelope + Harmonic Sine Modulation + Time-Domain Phase
+  - เพิ่มระบบ Dual-rate Exponential Smoothing: Fast Attack (0.32) ตอบสนองจังหวะกระเดื่องอย่างฉับไว และ Gentle Decay (0.16) ลดอาการกระตุกสะดุด
+  - เพิ่มเอฟเฟกต์ Floating Peak Dots (จุดลอยยอดกราฟอีควอไลเซอร์) พร้อมแรงโน้มถ่วงจำลอง (Gravity Fall)
+  - เพิ่มเงาสะท้อนใต้น้ำโปร่งแสง (Mirrored Faint Reflection) ด้านล่างเส้น Baseline
+  - ปรับขนาด Canvas รองรับ Responsive Layout เต็มพื้นที่ (`w-full h-full min-h-[260px]`)
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+### [2026-09-02] - Task 30: Global Toggleable Right Sidebar Workspace Panel
+- **Task Summary:** เพิ่มความสามารถในการซ่อน/แสดง (Toggle Collapse/Expand) แถบขวา (Right Sidebar Workspace) ได้ในทุกๆ หน้าจอของโปรแกรม พร้อมปุ่มควบคุมทั้งใน Custom Titlebar, แถบข้าง, และปุ่มลอยสำหรับเปิดคืน
+- **Details:**
+  - เพิ่มสถานะ `showRightSidebar` และเมธอด `toggleRightSidebar()` ใน [src/renderer/src/stores/app.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/app.ts)
+  - เพิ่มปุ่ม Toggle Workspace Sidebar (`PanelRightClose` / `PanelRightOpen`) บนแถบด้านบน [src/renderer/src/components/layout/CustomTitlebar.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/CustomTitlebar.vue)
+  - เพิ่มปุ่มพับเก็บ Sidebar ในส่วนหัวของ [src/renderer/src/components/layout/RightSidebarPanel.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/RightSidebarPanel.vue)
+  - เพิ่มปุ่มลอยสำหรับเปิด Sidebar กลับมาเมื่อถูกซ่อนใน [src/renderer/src/App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) และ [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue)
+  - เมื่อซ่อนแถบขวา หน้าจอหลักฝั่งซ้าย (Visualizer, Library, Ambient, YouTube, Todo, Notes) จะขยายเต็มพื้นที่ 100% ทันที
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+### [2026-09-02] - Task 29: Bubble Flow (Rising Water Bubbles) Visualizer Mode
+- **Task Tracker:** [task/bubble_visualizer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/bubble_visualizer_task.md)
+- **Task Summary:** เพิ่มโหมด VU / Audio Visualizer รูปแบบที่ 5 คือ **Bubble Flow (Rising Water Bubbles)** แสดงการปล่อยฟองน้ำลอยขึ้นจากด้านล่างสู่ด้านบนตามคลื่นความถี่เสียงและจังหวะเพลง (Frequency-Mapped Particle Physics)
+- **Details:**
+  - สร้างคอมโพเนนต์ [src/renderer/src/components/visualizers/FloatingBubbles.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/FloatingBubbles.vue) จำลองระบบอนุภาคฟองน้ำความเร็ว 60fps พร้อมการกระจายย่านความถี่ (Bass/Mids/Highs), การสั่นไหว (Sine Wobble), การขยายตัว (Decompression), แสงสะท้อนแบบ Glass Water Shading และเอฟเฟกต์การแตกที่ผิวน้ำ (Surface Pop)
+  - อัปเดต Type `visualizerMode` ใน [src/renderer/src/stores/app.ts](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/stores/app.ts)
+  - รวมโหมด Bubble Flow เข้ากับ [VisualizerContainer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/VisualizerContainer.vue), [MiniPlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/MiniPlayer.vue), และ [DockSidebar.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/DockSidebar.vue)
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📌 Project Overview & Goals
+- **Project:** Lofi Music Player Desktop App (v1.1.2)
+- **Tech Stack:** Electron, Vue 3, Vite, Tailwind CSS, Pinia, Howler.js / Web Audio API, koffi, electron-builder
+- **Status:** 🟢 Released (Version 1.1.2 Ready)
+
+---
+
+## 🎯 Milestones & Task Checklist
+
+### Completed Tasks
+- [x] Initial Requirements Specification ([REQUIREMENT.md](file:///d:/Source/github/sorinoi/lofi-player/REQUIREMENT.md)) & Tech Stack ([TECH_STACK.md](file:///d:/Source/github/sorinoi/lofi-player/TECH_STACK.md))
+- [x] Project Operating Rules & Protocols ([RULE.md](file:///d:/Source/github/sorinoi/lofi-player/RULE.md))
+- [x] Project Initialization & Setup Boilerplate ([planning/init_project.md](file:///d:/Source/github/sorinoi/lofi-player/planning/init_project.md) / [task/init_project_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/init_project_task.md))
+- [x] **Core Features Phase 1:** Web Audio Engine & 4 Music-Reactive VU Visualizers ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Core Features Phase 2:** Local Audio Import, Metadata Parser & Persistent Library ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Core Features Phase 3:** Ambient Sound Mixer, Pomodoro & Sleep Timers ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Core Features Phase 4:** YouTube Music & Video Integration ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Core Features Phase 5:** Custom Titlebar, Mini-Player & Global Shortcuts ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Sub-Feature 1:** Mini-Player Timer Widget & Dynamic Taskbar Countdown ([task/mini_timer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/mini_timer_task.md))
+- [x] **Packaging & Distribution:** Build `.exe` installer & Complete `README.md` ([task/core_features_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/core_features_task.md))
+- [x] **Sub-Feature 2:** Subscription Codex & AI Rate Limit / Quota Monitor ([task/rate_limit_monitor_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/rate_limit_monitor_task.md))
+- [x] **Sub-Feature 3:** YouTube Stream Playback & Live URL Resolver Fix ([task/youtube_stream_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/youtube_stream_fix_task.md))
+- [x] **Feature Removal:** Clean Removal of AI Rate Limit & Quota Monitor ([task/remove_ai_rate_limit_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/remove_ai_rate_limit_task.md))
+- [x] **App Branding:** Custom App Icon Integration with `cga-lofi.ico` ([task/app_icon_customization_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/app_icon_customization_task.md))
+- [x] **UI/UX Enhancement:** Native Splash Screen with 3s Minimum Loading & Cozy Animations ([task/splash_screen_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/splash_screen_task.md))
+- [x] **Video Feature:** Dedicated YouTube Video Screen Mode & Quad-View Mini Player ([task/youtube_video_view_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_video_view_mode_task.md))
+- [x] **Sub-Feature 4:** Floating Ghost Timer Overlay in Video Mode ([task/floating_ghost_timer_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/floating_ghost_timer_task.md))
+- [x] **Bug Fix:** YouTube Fullscreen & Cinema Mode Tab Overlap Fix ([task/cinema_fullscreen_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/cinema_fullscreen_fix_task.md))
+- [x] **Release 1.1.0:** Version Bump to 1.1.0 & Windows Build
+- [x] **Feature Addition:** To-Do App with JSON Database & Timestamps ([task/todo_app_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_app_task.md))
+- [x] **Feature Addition:** Right Sidebar Dock Mode for To-Do & Music ([task/dock_sidebar_mode_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/dock_sidebar_mode_task.md))
+- [x] **Feature Addition:** Note Record with JSON Database & Timestamps ([task/note_record_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_record_task.md))
+- [x] **Bug Fix:** Disable YouTube Autoplay on App Startup ([task/youtube_autoplay_fix_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_autoplay_fix_task.md))
+- [x] **Bug Fix:** Fix YouTube Video Rendering in Right Sidebar Dock Mode ([task/dock_sidebar_video_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_fix_task.md))
+- [x] **UI/UX Enhancement:** Adjust Dock Sidebar YouTube Video Height to 16:9 Aspect Ratio ([task/dock_sidebar_video_aspect_ratio_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_video_aspect_ratio_task.md))
+- [x] **Desktop Integration:** Windows Desktop Space Reservation (AppBar) for Dock Sidebar Mode ([task/appbar_screen_reservation_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/appbar_screen_reservation_task.md))
+- [x] **Bug Fix:** Fix Dock Sidebar Window Positioning in Reserved AppBar Space ([task/dock_sidebar_position_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_position_fix_task.md))
+- [x] **Bug Fix:** Fix Windows Taskbar Overlapping Dock Sidebar Application ([task/dock_sidebar_taskbar_overlap_fix_task.md](file:///e:/Source/github/sorinoi/Lofi-mini-player/task/dock_sidebar_taskbar_overlap_fix_task.md))
+- [x] **Data Persistence:** YouTube Bookmarks JSON Database Persistence ([task/youtube_bookmark_persistence_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_bookmark_persistence_task.md))
+- [x] **UI/UX Enhancement:** YouTube Full-Width Layout for Fullscreen / Maximized Displays ([task/youtube_fullscreen_fullwidth_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_fullscreen_fullwidth_task.md))
+- [x] **UI/UX Redesign:** YouTube Watch-Style 2-Column Desktop Layout ([task/youtube_watch_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_watch_layout_task.md))
+- [x] **Feature Addition:** YouTube Right Sidebar Switchable Modes (Playlists, To-Do, Notes) ([task/youtube_right_sidebar_modes_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_right_sidebar_modes_task.md))
+- [x] **UI/UX Enhancement:** Todo View Status Cards Typography & Layout Optimization ([task/todo_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/todo_status_typography_task.md))
+- [x] **UI/UX Enhancement:** Note View Status Cards Typography & Layout Optimization ([task/note_status_typography_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/note_status_typography_task.md))
+- [x] **Performance Optimization:** YouTube Playback Performance & Hardware Acceleration Optimization ([task/youtube_performance_optimization_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_performance_optimization_task.md))
+- [x] **UI/UX Redesign:** Unified Full-Width 2-Column Layout Across All Functions ([task/unified_two_column_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/unified_two_column_layout_task.md))
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-02] - Task 28: Unified Full-Width 2-Column Layout Across All Functions
+- **Task Tracker:** [task/unified_two_column_layout_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/unified_two_column_layout_task.md)
+- **Task Summary:** ปรับปรุงโครงสร้างหน้าจอทุกฟังก์ชันในโปรแกรมให้แสดงผลแบบ Full-Width (เต็มพื้นที่) ในโหมดเต็มจอ / ขยายหน้าต่าง และจัดโครงสร้างเป็น 2-Column Split Layout โดยฝั่งซ้ายจะเปลี่ยนตามฟังก์ชันหลักที่เลือก และฝั่งขวาจะเป็น Universal Right Sidebar ที่สามารถสลับแท็บระหว่าง Playlists/Stations/Queue, Focus Tasks, และ Note Record ได้ตลอดเวลา
+- **Details:**
+  - สร้างคอมโพเนนต์ [src/renderer/src/components/layout/RightSidebarPanel.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/layout/RightSidebarPanel.vue) เป็นแถบข้างอเนกประสงค์รองรับ YouTube Live Stations, Saved Bookmarks, Local Playback Queue, Focus Tasks และ Note Record พร้อม Badge แจ้งเตือนแบบ Real-time
+  - ปลดล็อกข้อจำกัดความกว้าง `max-w-*` ใน [VisualizerContainer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/visualizers/VisualizerContainer.vue), [MusicLibrary.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/library/MusicLibrary.vue), [AmbientMixer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/ambient/AmbientMixer.vue), [TodoView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/todo/TodoView.vue), และ [NoteView.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/notes/NoteView.vue) ให้ขยายเต็มพื้นที่ (`w-full`)
+  - จัดโครงสร้าง [src/renderer/src/App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) และ [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue) ให้แสดงผล 2 คอลัมน์อย่างเป็นเอกภาพ
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
+
+---
+
+## 📝 Activity & Changelog
+
+### [2026-09-02] - Task 27: YouTube Playback Performance & Hardware Acceleration Optimization
+- **Task Tracker:** [task/youtube_performance_optimization_task.md](file:///d:/Source/github/sorinoi/lofi-player/task/youtube_performance_optimization_task.md)
+- **Task Summary:** ปรับแต่งระบบการเล่น YouTube ใน Electron ให้ลื่นไหลระดับ 60fps เทียบเท่าเว็บเบราว์เซอร์ โดยเปิดใช้ GPU Rasterization, Zero-copy Video Decoding, ปิด Background Throttling, เพิ่ม CSS Hardware Compositing Hints และปรับลดความซับซ้อนของ Background Glow
+- **Details:**
+  - เพิ่ม Chromium Switches ใน [src/main/index.ts](file:///d:/Source/github/sorinoi/lofi-player/src/main/index.ts): `enable-gpu-rasterization`, `enable-zero-copy`, `ignore-gpu-blocklist`, `enable-hardware-overlays`, `disable-background-timer-throttling`, `disable-renderer-backgrounding` และตั้ง `backgroundThrottling: false` ใน `webPreferences`
+  - เพิ่ม GPU Hardware Acceleration CSS hints (`translate3d`, `will-change`, `backface-visibility`) ใน [src/renderer/src/App.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/App.vue) และ [src/renderer/src/components/youtube/YouTubePlayer.vue](file:///d:/Source/github/sorinoi/lofi-player/src/renderer/src/components/youtube/YouTubePlayer.vue)
+  - เพิ่ม `contain: strict` ให้กับคลาส `.invisible-player` ป้องกัน Layout Thrashing เมื่อสลับหน้าจอ
+  - ปรับการแสดงผล Ambient Glow ข้างหลัง Player ให้แสดงผลเฉพาะโหมด Visualizer เพื่อลดภาระ Repaint ขณะรับชมวิดีโอ 1080p 60fps
+  - ผ่านการทดสอบ Typecheck (`npm run typecheck`) สำเร็จ 100% (0 errors)
+  - ผ่านการทดสอบ Build โปรเจกต์ (`npm run build`) สำเร็จ 100% (0 errors)
 
 ---
 

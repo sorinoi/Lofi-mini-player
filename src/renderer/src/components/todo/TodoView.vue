@@ -56,7 +56,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full h-full flex flex-col p-6 overflow-y-auto max-w-6xl mx-auto space-y-6 select-none">
+  <div class="w-full h-full flex flex-col p-6 overflow-y-auto space-y-6 select-none">
     <!-- Header Section (Title, Subtitle & Action Buttons) -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>

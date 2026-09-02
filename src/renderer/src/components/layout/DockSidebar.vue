@@ -40,6 +40,7 @@ import AnalogVuMeter from '../visualizers/AnalogVuMeter.vue'
 import FrequencyBars from '../visualizers/FrequencyBars.vue'
 import CircularPulse from '../visualizers/CircularPulse.vue'
 import PixelWave from '../visualizers/PixelWave.vue'
+import FloatingBubbles from '../visualizers/FloatingBubbles.vue'
 
 const appStore = useAppStore()
 const playerStore = usePlayerStore()
@@ -86,7 +87,7 @@ const noteColorsList: { key: NoteColor; dot: string }[] = [
 ]
 
 const focusPresets = [25, 45, 60]
-const visualizerModes = ['analog_vu', 'frequency_bars', 'circular_pulse', 'pixel_wave'] as const
+const visualizerModes = ['analog_vu', 'frequency_bars', 'circular_pulse', 'pixel_wave', 'floating_bubbles'] as const
 
 function cycleVisualizerMode(): void {
   const currentIdx = visualizerModes.indexOf(appStore.visualizerMode as any)
@@ -755,6 +756,7 @@ onMounted(async () => {
           <FrequencyBars v-else-if="appStore.visualizerMode === 'frequency_bars'" :sensitivity="1.2" />
           <CircularPulse v-else-if="appStore.visualizerMode === 'circular_pulse'" :sensitivity="1.2" />
           <PixelWave v-else-if="appStore.visualizerMode === 'pixel_wave'" :sensitivity="1.2" />
+          <FloatingBubbles v-else-if="appStore.visualizerMode === 'floating_bubbles'" :sensitivity="1.2" />
 
           <!-- Style Switcher Pill -->
           <div class="absolute top-1 right-1 flex items-center bg-lofi-bg/85 backdrop-blur-sm px-1.5 py-0.5 rounded-md border border-lofi-border/70 z-20 shadow-sm">

@@ -23,7 +23,11 @@ import {
   Keyboard,
   Tv,
   CheckSquare,
-  StickyNote
+  StickyNote,
+  PanelRightOpen,
+  RotateCcw,
+  X,
+  Sparkles
 } from 'lucide-vue-next'
 import { useAppStore } from './stores/app'
 import { usePlayerStore } from './stores/player'
@@ -40,6 +44,7 @@ import CustomTitlebar from './components/layout/CustomTitlebar.vue'
 import MiniPlayer from './components/layout/MiniPlayer.vue'
 import DockSidebar from './components/layout/DockSidebar.vue'
 import VisualizerContainer from './components/visualizers/VisualizerContainer.vue'
+import RightSidebarPanel from './components/layout/RightSidebarPanel.vue'
 import MusicLibrary from './components/library/MusicLibrary.vue'
 import AmbientMixer from './components/ambient/AmbientMixer.vue'
 import YouTubePlayer from './components/youtube/YouTubePlayer.vue'
@@ -288,17 +293,129 @@ onUnmounted(() => {
 
         <!-- Quick Actions: Timer, Import & Mini View -->
         <div class="space-y-2">
-          <!-- Focus / Sleep Timer Trigger Button -->
+          <!-- 1. Large High-Visibility Digital Focus Clock Widget (Active when timer is running or in progress) -->
+          <div
+            v-if="timerStore.isPomodoroRunning || timerStore.isSleepTimerActive || (timerStore.pomodoroSecondsLeft < timerStore.focusMinutes * 60)"
+            class="p-3 bg-lofi-card/95 border border-lofi-border rounded-2xl shadow-xl backdrop-blur-md relative overflow-hidden flex flex-col gap-1.5 animate-fadeIn select-none group"
+          >
+            <!-- Ambient Accent Glow -->
+            <div
+              :class="[
+                'absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl pointer-events-none opacity-40',
+                timerStore.isSleepTimerActive
+                  ? 'bg-lofi-purple'
+                  : timerStore.pomodoroMode === 'focus'
+                  ? 'bg-lofi-pink'
+                  : 'bg-emerald-400'
+              ]"
+            ></div>
+
+            <!-- Header Badge & Settings -->
+            <div class="flex items-center justify-between z-10">
+              <div class="flex items-center gap-1.5">
+                <Target v-if="!timerStore.isSleepTimerActive && timerStore.pomodoroMode === 'focus'" class="w-3.5 h-3.5 text-lofi-pink animate-pulse" />
+                <Sparkles v-else-if="!timerStore.isSleepTimerActive" class="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <Moon v-else class="w-3.5 h-3.5 text-lofi-purple animate-pulse" />
+
+                <span
+                  :class="[
+                    'text-[10px] font-bold uppercase tracking-wider',
+                    timerStore.isSleepTimerActive
+                      ? 'text-lofi-purple'
+                      : timerStore.pomodoroMode === 'focus'
+                      ? 'text-lofi-pink'
+                      : 'text-emerald-400'
+                  ]"
+                >
+                  {{ timerStore.isSleepTimerActive ? 'Sleep Timer' : (timerStore.pomodoroMode === 'focus' ? 'Focus Session' : 'Break Time') }}
+                </span>
+              </div>
+
+              <!-- Open Full Timer Modal -->
+              <button
+                @click="isTimerModalOpen = true"
+                class="text-lofi-muted hover:text-lofi-text p-1 rounded-lg hover:bg-lofi-surface/60 transition-colors cursor-pointer"
+                title="Timer Settings"
+              >
+                <Sliders class="w-3 h-3" />
+              </button>
+            </div>
+
+            <!-- Large Digital Clock Display (High Contrast & Clear) -->
+            <div
+              @click="isTimerModalOpen = true"
+              class="py-1 cursor-pointer flex flex-col items-center justify-center z-10 hover:opacity-90 transition-opacity"
+              title="Click to configure timer"
+            >
+              <span
+                :class="[
+                  'font-mono font-black text-2xl tracking-widest text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] tabular-nums'
+                ]"
+              >
+                {{ timerStore.isSleepTimerActive ? formatTime(timerStore.sleepSecondsLeft) : formatTime(timerStore.pomodoroSecondsLeft) }}
+              </span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-1.5 bg-lofi-bg/80 rounded-full overflow-hidden z-10 border border-white/5">
+              <div
+                :class="[
+                  'h-full rounded-full transition-all duration-300',
+                  timerStore.isSleepTimerActive
+                    ? 'bg-lofi-purple'
+                    : timerStore.pomodoroMode === 'focus'
+                    ? 'bg-lofi-pink'
+                    : 'bg-emerald-400'
+                ]"
+                :style="{ width: `${timerStore.isSleepTimerActive ? timerStore.sleepProgress : timerStore.pomodoroProgress}%` }"
+              ></div>
+            </div>
+
+            <!-- Mini Controls Strip -->
+            <div class="flex items-center justify-between pt-1 text-[10px] text-lofi-muted z-10">
+              <button
+                v-if="!timerStore.isSleepTimerActive"
+                @click="timerStore.isPomodoroRunning ? timerStore.pausePomodoro() : timerStore.startPomodoro()"
+                class="px-2 py-0.5 rounded-md bg-lofi-surface/80 hover:bg-lofi-surface hover:text-lofi-text border border-lofi-border/60 transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <Pause v-if="timerStore.isPomodoroRunning" class="w-2.5 h-2.5 fill-current text-amber-400" />
+                <Play v-else class="w-2.5 h-2.5 fill-current text-emerald-400 ml-0.2" />
+                <span>{{ timerStore.isPomodoroRunning ? 'Pause' : 'Resume' }}</span>
+              </button>
+
+              <button
+                v-if="!timerStore.isSleepTimerActive"
+                @click="timerStore.resetPomodoro()"
+                class="px-2 py-0.5 rounded-md bg-lofi-surface/80 hover:bg-lofi-surface hover:text-red-300 border border-lofi-border/60 transition-all flex items-center gap-1 cursor-pointer"
+                title="Reset Timer"
+              >
+                <RotateCcw class="w-2.5 h-2.5" />
+                <span>Reset</span>
+              </button>
+
+              <button
+                v-if="timerStore.isSleepTimerActive"
+                @click="timerStore.cancelSleepTimer()"
+                class="w-full py-0.5 rounded-md bg-lofi-surface/80 hover:bg-lofi-surface hover:text-red-300 border border-lofi-border/60 transition-all flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <X class="w-2.5 h-2.5" />
+                <span>Cancel Sleep Timer</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Compact Focus / Sleep Timer Trigger Button (When idle / not active) -->
           <button
+            v-else
             @click="isTimerModalOpen = true"
-            class="w-full flex items-center justify-between py-2 px-2.5 rounded-xl bg-lofi-card hover:bg-lofi-border/60 text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm group"
+            class="w-full flex items-center justify-between py-2 px-2.5 rounded-xl bg-lofi-card hover:bg-lofi-border/60 text-lofi-text text-xs font-semibold border border-lofi-border transition-all shadow-sm group cursor-pointer"
           >
             <div class="flex items-center gap-2">
               <Timer class="w-3.5 h-3.5 text-lofi-primary group-hover:rotate-12 transition-transform" />
               <span>Focus Timer</span>
             </div>
 
-            <!-- Active Timer Pill -->
+            <!-- Active Timer Pill (Fallback) -->
             <span
               v-if="timerStore.isPomodoroRunning"
               class="px-1.5 py-0.5 rounded-full bg-lofi-primary/20 text-lofi-primary text-2xs font-mono font-bold animate-pulse flex items-center gap-1"
@@ -355,60 +472,104 @@ onUnmounted(() => {
         <div class="absolute -top-32 -right-32 w-96 h-96 bg-lofi-primary/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-lofi-purple/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Tab 1: Now Playing & VU Visualizer -->
-        <div v-show="appStore.activeTab === 'player'" class="flex-1 p-6 overflow-y-auto flex flex-col items-center justify-center z-10">
-          <!-- Track Header -->
-          <div class="mb-4 text-center max-w-xl">
-            <div class="flex items-center justify-center gap-2 mb-1">
-              <span class="px-2.5 py-0.5 rounded-full bg-lofi-card border border-lofi-border text-2xs uppercase tracking-wider text-lofi-primary font-semibold">
-                {{ ytStore.isPlaying ? 'YouTube Live Stream' : (playerStore.currentTrack?.genre || 'Lofi') }}
-              </span>
-              <button
-                v-if="ytStore.isPlaying || appStore.activeTab === 'youtube'"
-                @click="handleShowYouTubeVideo"
-                class="px-2.5 py-0.5 rounded-full bg-lofi-pink/20 hover:bg-lofi-pink/30 border border-lofi-pink/40 text-2xs uppercase tracking-wider text-lofi-pink font-semibold flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-sm"
-                title="Switch directly to YouTube Video Screen"
-              >
-                <Tv class="w-3 h-3" />
-                <span>Watch Video Stream</span>
-              </button>
+        <!-- 2-Column Split Workspace (Full-Width Responsive Layout across all tabs) -->
+        <div class="flex-1 flex flex-col lg:flex-row gap-6 p-6 overflow-y-auto w-full min-h-0 z-10">
+          <!-- LEFT COLUMN: Primary Dynamic Workspace (Switches based on activeTab) -->
+          <div class="flex-1 flex flex-col min-w-0 h-full">
+            <!-- Tab 1: Now Playing & VU Visualizer -->
+            <div v-show="appStore.activeTab === 'player'" class="w-full h-full flex flex-col gap-4">
+              <!-- Track Header Banner -->
+              <div class="w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-5 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
+                <div class="flex items-center gap-4 min-w-0 flex-1">
+                  <div class="w-14 h-14 rounded-2xl bg-lofi-card border border-lofi-border flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                    <img
+                      v-if="playerStore.currentTrack?.coverUrl"
+                      :src="playerStore.currentTrack.coverUrl"
+                      alt="Cover"
+                      class="w-full h-full object-cover"
+                    />
+                    <Music v-else class="w-6 h-6 text-lofi-primary" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="px-2.5 py-0.5 rounded-full bg-lofi-primary/20 text-lofi-primary text-[10px] font-bold uppercase tracking-wider">
+                        {{ ytStore.isPlaying ? 'YouTube Stream' : (playerStore.currentTrack?.genre || 'Lofi Chill') }}
+                      </span>
+                    </div>
+                    <h2 class="text-lg font-bold text-lofi-text truncate">
+                      {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack?.title || 'No Track Playing') }}
+                    </h2>
+                    <p class="text-xs text-lofi-muted truncate mt-0.5">
+                      {{ ytStore.isPlaying ? ytStore.currentChannel : (playerStore.currentTrack?.artist || 'Select a track from the library or playlist on the right') }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    v-if="ytStore.isPlaying || appStore.activeTab === 'youtube'"
+                    @click="handleShowYouTubeVideo"
+                    class="px-3.5 py-2 rounded-xl bg-lofi-pink/20 hover:bg-lofi-pink/30 border border-lofi-pink/40 text-xs font-semibold text-lofi-pink flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <Tv class="w-3.5 h-3.5" />
+                    <span>Watch Video Stream</span>
+                  </button>
+                  <button
+                    v-else
+                    @click="appStore.setActiveTab('library')"
+                    class="px-3.5 py-2 rounded-xl bg-lofi-primary/10 hover:bg-lofi-primary/20 border border-lofi-primary/30 text-xs font-semibold text-lofi-primary flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <FolderOpen class="w-3.5 h-3.5" />
+                    <span>Browse Library</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4-Mode Dynamic Visualizer & VU Meter Container -->
+              <div class="w-full flex-1 min-h-[360px] flex flex-col">
+                <VisualizerContainer />
+              </div>
             </div>
-            <h2 class="text-xl font-bold text-lofi-text truncate tracking-wide">
-              {{ ytStore.isPlaying ? ytStore.currentTitle : (playerStore.currentTrack?.title || 'No Track Playing') }}
-            </h2>
-            <p class="text-xs text-lofi-muted truncate mt-0.5">
-              {{ ytStore.isPlaying ? ytStore.currentChannel : (playerStore.currentTrack?.artist || 'Open Music Library to select or import your favorite tracks') }}
-            </p>
+
+            <!-- Tab 2: Music Library -->
+            <div v-show="appStore.activeTab === 'library'" class="w-full h-full bg-lofi-surface/80 border border-lofi-border rounded-3xl backdrop-blur-md shadow-2xl overflow-hidden flex flex-col">
+              <MusicLibrary class="!p-5" />
+            </div>
+
+            <!-- Tab 3: Ambient Sound Mixer -->
+            <div v-show="appStore.activeTab === 'ambient'" class="w-full h-full bg-lofi-surface/80 border border-lofi-border rounded-3xl backdrop-blur-md shadow-2xl overflow-hidden flex flex-col">
+              <AmbientMixer class="!p-5" />
+            </div>
+
+            <!-- Tab 4: YouTube Stream Player (Layout placeholder for desktop view - rendered via persistent YouTubePlayer) -->
+            <div
+              v-show="appStore.activeTab === 'youtube'"
+              class="w-full h-full flex flex-col pointer-events-none"
+            ></div>
+
+            <!-- Tab 5: To-Do / Focus Task Manager -->
+            <div v-show="appStore.activeTab === 'todo'" class="w-full h-full bg-lofi-surface/80 border border-lofi-border rounded-3xl backdrop-blur-md shadow-2xl overflow-hidden flex flex-col">
+              <TodoView class="!p-5" />
+            </div>
+
+            <!-- Tab 6: Note Record & Quick Memos -->
+            <div v-show="appStore.activeTab === 'notes'" class="w-full h-full bg-lofi-surface/80 border border-lofi-border rounded-3xl backdrop-blur-md shadow-2xl overflow-hidden flex flex-col">
+              <NoteView class="!p-5" />
+            </div>
           </div>
 
-          <!-- 4-Mode Dynamic Visualizer & VU Meter Container -->
-          <VisualizerContainer />
-        </div>
+          <!-- RIGHT COLUMN: Universal Multi-Mode Right Sidebar (Available across all tabs, toggleable) -->
+          <RightSidebarPanel v-if="appStore.activeTab !== 'youtube' && appStore.showRightSidebar" />
 
-        <!-- Tab 2: Music Library -->
-        <div v-show="appStore.activeTab === 'library'" class="flex-1 overflow-hidden z-10">
-          <MusicLibrary />
-        </div>
-
-        <!-- Tab 3: Ambient Sound Mixer -->
-        <div v-show="appStore.activeTab === 'ambient'" class="flex-1 overflow-hidden z-10">
-          <AmbientMixer />
-        </div>
-
-        <!-- Tab 4: YouTube Stream Player (Layout placeholder for desktop view) -->
-        <div
-          v-show="appStore.activeTab === 'youtube'"
-          class="flex-1 overflow-hidden pointer-events-none"
-        ></div>
-
-        <!-- Tab 5: To-Do / Focus Task Manager -->
-        <div v-show="appStore.activeTab === 'todo'" class="flex-1 overflow-hidden z-10 flex flex-col">
-          <TodoView />
-        </div>
-
-        <!-- Tab 6: Note Record & Quick Memos -->
-        <div v-show="appStore.activeTab === 'notes'" class="flex-1 overflow-hidden z-10 flex flex-col">
-          <NoteView />
+          <!-- Floating Re-open Sidebar Button when hidden -->
+          <button
+            v-if="appStore.activeTab !== 'youtube' && !appStore.showRightSidebar"
+            @click="appStore.toggleRightSidebar"
+            class="fixed right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-lofi-surface/90 hover:bg-lofi-card border border-lofi-border text-lofi-muted hover:text-lofi-pink shadow-xl backdrop-blur-md transition-all active:scale-95 cursor-pointer z-30 group"
+            title="Open Workspace Sidebar (Tasks / Stations / Notes)"
+          >
+            <PanelRightOpen class="w-4 h-4 group-hover:scale-110 transition-transform" />
+          </button>
         </div>
 
         <!-- Bottom Audio Player Control Bar -->
@@ -631,11 +792,12 @@ onUnmounted(() => {
   position: absolute !important;
   left: -99999px !important;
   top: -99999px !important;
-  width: 1040px !important;
-  height: 720px !important;
+  width: 640px !important;
+  height: 360px !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: visible !important;
+  contain: strict !important;
 }
 
 .mini-video-fixed {
@@ -650,6 +812,9 @@ onUnmounted(() => {
   visibility: visible !important;
   overflow: hidden !important;
   background-color: #000 !important;
+  transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 .dock-video-fixed {
@@ -665,6 +830,9 @@ onUnmounted(() => {
   visibility: visible !important;
   overflow: hidden !important;
   background-color: #000 !important;
+  transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 .desktop-youtube-active {
@@ -678,6 +846,9 @@ onUnmounted(() => {
   pointer-events: auto !important;
   visibility: visible !important;
   overflow: hidden !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 .cinema-video-fullscreen {
@@ -692,6 +863,9 @@ onUnmounted(() => {
   visibility: visible !important;
   overflow: hidden !important;
   background-color: #000 !important;
+  transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 :fullscreen {

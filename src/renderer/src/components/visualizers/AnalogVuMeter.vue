@@ -233,6 +233,12 @@ function renderLoop(): void {
   const canvas = canvasRef.value
   if (!canvas) return
 
+  // Skip rendering and heavy calculations when hidden in DOM to save CPU/GPU for video decoding
+  if (canvas.offsetParent === null || canvas.clientWidth === 0) {
+    animFrameId = requestAnimationFrame(renderLoop)
+    return
+  }
+
   const dpr = window.devicePixelRatio || 1
   const targetW = Math.max(300, (canvas.clientWidth || 600) * dpr)
   const targetH = Math.max(150, (canvas.clientHeight || 220) * dpr)
@@ -307,10 +313,19 @@ function renderLoop(): void {
     rightPeakLed = false
   }
 
-  // Calculate meter dimensions (Dual gauges side by side)
-  const gap = 16
-  const meterW = Math.min(270, (width - gap - 32) / 2)
-  const meterH = Math.min(160, height - 24)
+  // Calculate meter dimensions (Dual gauges side by side with proportional scaling)
+  const gap = Math.max(12, width * 0.025)
+  const availableW = (width - gap - 32) / 2
+  const availableH = height - 24
+  const aspect = 270 / 160 // standard vintage ratio ~1.6875
+
+  let meterW = availableW
+  let meterH = meterW / aspect
+  if (meterH > availableH) {
+    meterH = availableH
+    meterW = meterH * aspect
+  }
+
   const totalW = meterW * 2 + gap
   const startX = (width - totalW) / 2
   const startY = (height - meterH) / 2
@@ -324,9 +339,9 @@ function renderLoop(): void {
 
 onMounted(() => {
   if (canvasRef.value) {
-    // Set internal resolution
-    canvasRef.value.width = canvasRef.value.clientWidth * window.devicePixelRatio || 600
-    canvasRef.value.height = canvasRef.value.clientHeight * window.devicePixelRatio || 220
+    const dpr = window.devicePixelRatio || 1
+    canvasRef.value.width = (canvasRef.value.clientWidth || 600) * dpr
+    canvasRef.value.height = (canvasRef.value.clientHeight || 260) * dpr
   }
   renderLoop()
 })
@@ -340,6 +355,6 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full h-full flex flex-col items-center justify-center p-2 relative">
-    <canvas ref="canvasRef" class="w-full h-full max-h-56"></canvas>
+    <canvas ref="canvasRef" class="w-full h-full min-h-[260px]"></canvas>
   </div>
 </template>

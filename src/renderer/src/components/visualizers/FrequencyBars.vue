@@ -28,6 +28,12 @@ function renderLoop(): void {
   const canvas = canvasRef.value
   if (!canvas) return
 
+  // Skip rendering and heavy calculations when hidden in DOM to save CPU/GPU for video decoding
+  if (canvas.offsetParent === null || canvas.clientWidth === 0) {
+    animFrameId = requestAnimationFrame(renderLoop)
+    return
+  }
+
   const dpr = window.devicePixelRatio || 1
   const targetW = Math.max(300, (canvas.clientWidth || 600) * dpr)
   const targetH = Math.max(150, (canvas.clientHeight || 220) * dpr)
@@ -155,6 +161,6 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full h-full flex flex-col items-center justify-center p-2 relative">
-    <canvas ref="canvasRef" class="w-full h-full max-h-56"></canvas>
+    <canvas ref="canvasRef" class="w-full h-full min-h-[260px]"></canvas>
   </div>
 </template>

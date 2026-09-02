@@ -31,6 +31,7 @@ import AnalogVuMeter from '../visualizers/AnalogVuMeter.vue'
 import FrequencyBars from '../visualizers/FrequencyBars.vue'
 import CircularPulse from '../visualizers/CircularPulse.vue'
 import PixelWave from '../visualizers/PixelWave.vue'
+import FloatingBubbles from '../visualizers/FloatingBubbles.vue'
 
 const appStore = useAppStore()
 const playerStore = usePlayerStore()
@@ -39,7 +40,7 @@ const ytStore = useYouTubeStore()
 
 const focusPresets = [25, 45, 60]
 
-const visualizerModes = ['analog_vu', 'frequency_bars', 'circular_pulse', 'pixel_wave'] as const
+const visualizerModes = ['analog_vu', 'frequency_bars', 'circular_pulse', 'pixel_wave', 'floating_bubbles'] as const
 
 function cycleVisualizerMode(): void {
   const currentIdx = visualizerModes.indexOf(appStore.visualizerMode as any)
@@ -314,6 +315,7 @@ async function handleClose(): Promise<void> {
           <FrequencyBars v-else-if="appStore.visualizerMode === 'frequency_bars'" :sensitivity="1.2" />
           <CircularPulse v-else-if="appStore.visualizerMode === 'circular_pulse'" :sensitivity="1.2" />
           <PixelWave v-else-if="appStore.visualizerMode === 'pixel_wave'" :sensitivity="1.2" />
+          <FloatingBubbles v-else-if="appStore.visualizerMode === 'floating_bubbles'" :sensitivity="1.2" />
 
           <!-- Style Toggle Pill in top-right -->
           <div class="absolute top-1.5 right-1.5 flex items-center gap-1 bg-lofi-bg/85 backdrop-blur-sm px-2 py-0.5 rounded-md border border-lofi-border/70 no-drag z-20 shadow-sm">

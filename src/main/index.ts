@@ -10,8 +10,20 @@ import { loadNotesFromFile, saveNotesToFile, openNotesFolder, NoteItem } from '.
 import { loadYouTubeBookmarksFromFile, saveYouTubeBookmarksToFile, openYouTubeBookmarksFolder, YouTubeBookmarkItem } from './youtubeBookmarkStorage'
 import { appBarService } from './appBarService'
 
-// Disable user gesture requirement for media autoplay in Chromium
+// Chromium Hardware Acceleration & GPU Video Decoding Performance Switches
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+app.commandLine.appendSwitch('ignore-gpu-blocklist')
+app.commandLine.appendSwitch('enable-gpu-rasterization')
+app.commandLine.appendSwitch('enable-zero-copy')
+app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-on-top,underlay')
+app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder,AcceleratedVideoDecode,AcceleratedVideoEncoder,CanvasOopRasterization,PlatformHEVCDecoderSupport')
+app.commandLine.appendSwitch('disable-features', 'UseChromeOSDirectVideoDecoder')
+app.commandLine.appendSwitch('enable-accelerated-video-decode')
+app.commandLine.appendSwitch('enable-accelerated-mjpeg-decode')
+app.commandLine.appendSwitch('disable-software-rasterizer')
+app.commandLine.appendSwitch('disable-background-timer-throttling')
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+app.commandLine.appendSwitch('disable-renderer-backgrounding')
 
 let splashWindow: BrowserWindow | null = null
 let mainWindow: BrowserWindow | null = null
@@ -57,7 +69,9 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      webSecurity: false // Permits local audio streaming smoothly
+      webSecurity: false, // Permits local audio streaming smoothly
+      backgroundThrottling: false, // Keep media and timer playback smooth across all modes
+      experimentalFeatures: true
     }
   })
 

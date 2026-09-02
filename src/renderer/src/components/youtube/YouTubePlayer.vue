@@ -22,7 +22,8 @@ import {
   VolumeX,
   FileJson,
   CheckSquare,
-  StickyNote
+  StickyNote,
+  PanelRightOpen
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { useYouTubeStore } from '../../stores/youtube'
@@ -33,6 +34,7 @@ import { useNoteStore } from '../../stores/note'
 import { youtubeService, YOUTUBE_LOFI_PRESETS } from '../../services/youtubeService'
 import { audioEngine } from '../../services/audioEngine'
 import VisualizerContainer from '../visualizers/VisualizerContainer.vue'
+import RightSidebarPanel from '../layout/RightSidebarPanel.vue'
 import TodoView from '../todo/TodoView.vue'
 import NoteView from '../notes/NoteView.vue'
 
@@ -247,9 +249,9 @@ onUnmounted(() => {
               : 'w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-4 md:p-5 backdrop-blur-md shadow-2xl flex flex-col gap-4 relative overflow-hidden'
           ]"
         >
-          <!-- Ambient Glow Behind Player -->
+          <!-- Ambient Glow Behind Player (Only in Visualizer Mode to avoid per-frame GPU redraw during video playback) -->
           <div
-            v-if="!isPureVideoMode"
+            v-if="!isPureVideoMode && ytStore.displayMode === 'visualizer'"
             class="absolute -top-24 -right-24 w-80 h-80 bg-lofi-pink/10 rounded-full blur-3xl pointer-events-none"
           ></div>
 
@@ -435,178 +437,18 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- RIGHT SIDEBAR COLUMN: Switchable between Playlists, To-Do, and Notes -->
-      <div
-        v-if="!isPureVideoMode"
-        class="w-full lg:w-[420px] xl:w-[480px] 2xl:w-[540px] flex flex-col gap-4 flex-shrink-0"
+      <!-- RIGHT SIDEBAR COLUMN: Universal Multi-Mode Sidebar (Playlists, Tasks, Notes, Toggleable) -->
+      <RightSidebarPanel v-if="!isPureVideoMode && appStore.showRightSidebar" />
+
+      <!-- Floating Re-open Sidebar Button on YouTube Screen when hidden -->
+      <button
+        v-if="!isPureVideoMode && !appStore.showRightSidebar"
+        @click="appStore.toggleRightSidebar"
+        class="fixed right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-lofi-surface/90 hover:bg-lofi-card border border-lofi-border text-lofi-muted hover:text-lofi-pink shadow-xl backdrop-blur-md transition-all active:scale-95 cursor-pointer z-30 group"
+        title="Open Workspace Sidebar (Tasks / Stations / Notes)"
       >
-        <!-- Mode Switcher Tabs for Right Column -->
-        <div class="flex items-center gap-1.5 p-1 bg-lofi-surface/90 border border-lofi-border rounded-2xl backdrop-blur-md shadow-sm w-fit">
-          <button
-            @click="rightPanelMode = 'playlist'"
-            :class="[
-              'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer',
-              rightPanelMode === 'playlist'
-                ? 'bg-lofi-pink text-lofi-bg shadow-md'
-                : 'text-lofi-muted hover:text-lofi-text hover:bg-lofi-card/60'
-            ]"
-          >
-            <RadioTower class="w-3.5 h-3.5" />
-            <span>Playlists & Stations</span>
-          </button>
-
-          <button
-            @click="rightPanelMode = 'todo'"
-            :class="[
-              'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer',
-              rightPanelMode === 'todo'
-                ? 'bg-emerald-500 text-white shadow-md'
-                : 'text-lofi-muted hover:text-lofi-text hover:bg-lofi-card/60'
-            ]"
-          >
-            <CheckSquare class="w-3.5 h-3.5" />
-            <span>To-Do List</span>
-            <span v-if="todoStore.pendingCount > 0" class="px-1.5 py-0.2 text-[9px] font-bold rounded-full bg-white/20">
-              {{ todoStore.pendingCount }}
-            </span>
-          </button>
-
-          <button
-            @click="rightPanelMode = 'note'"
-            :class="[
-              'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer',
-              rightPanelMode === 'note'
-                ? 'bg-amber-500 text-white shadow-md'
-                : 'text-lofi-muted hover:text-lofi-text hover:bg-lofi-card/60'
-            ]"
-          >
-            <StickyNote class="w-3.5 h-3.5" />
-            <span>Notes</span>
-            <span v-if="noteStore.totalCount > 0" class="px-1.5 py-0.2 text-[9px] font-bold rounded-full bg-white/20">
-              {{ noteStore.totalCount }}
-            </span>
-          </button>
-        </div>
-
-        <!-- Mode 1: Playlists & Stations View -->
-        <div
-          v-if="rightPanelMode === 'playlist'"
-          class="flex flex-col gap-5 animate-fadeIn"
-        >
-          <!-- Curated 24/7 Lofi Stream Stations -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 text-xs font-semibold text-lofi-muted">
-              <RadioTower class="w-4 h-4 text-lofi-pink" />
-              <span>Curated 24/7 Lofi Stations:</span>
-            </div>
-
-            <div class="flex flex-col gap-2.5">
-              <div
-                v-for="station in YOUTUBE_LOFI_PRESETS"
-                :key="station.id"
-                @click="ytStore.playPreset(station)"
-                :class="[
-                  'p-2.5 rounded-2xl border transition-all flex items-center gap-3 cursor-pointer group backdrop-blur-sm',
-                  ytStore.isPlaying && ytStore.currentVideoId === station.videoId
-                    ? 'bg-lofi-card border-lofi-pink/60 ring-1 ring-lofi-pink/30 shadow-lg'
-                    : 'bg-lofi-surface/50 border-lofi-border hover:bg-lofi-card/80 hover:border-lofi-border/80'
-                ]"
-              >
-                <!-- Thumbnail with Play Hover -->
-                <div class="w-24 h-16 rounded-xl overflow-hidden bg-lofi-bg flex-shrink-0 relative border border-lofi-border/60">
-                  <img :src="station.thumbnailUrl" alt="Thumb" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Play class="w-4 h-4 text-white fill-current" />
-                  </div>
-                  <span v-if="station.isLive" class="absolute bottom-1 right-1 px-1 py-0.2 bg-red-600 text-white font-bold text-[8px] rounded">
-                    LIVE
-                  </span>
-                </div>
-
-                <!-- Station Metadata -->
-                <div class="min-w-0 flex-1">
-                  <h4
-                    :class="[
-                      'text-xs font-bold line-clamp-2 transition-colors leading-tight',
-                      ytStore.isPlaying && ytStore.currentVideoId === station.videoId ? 'text-lofi-pink' : 'text-lofi-text group-hover:text-lofi-pink'
-                    ]"
-                  >
-                    {{ station.title }}
-                  </h4>
-                  <p class="text-2xs text-lofi-muted truncate mt-1">{{ station.channel }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Saved YouTube Stream Bookmarks -->
-          <div
-            v-if="ytStore.bookmarks.length > 0"
-            class="space-y-3 pt-2 border-t border-lofi-border/50"
-          >
-            <div class="flex items-center justify-between text-xs font-semibold text-lofi-muted">
-              <div class="flex items-center gap-2">
-                <Bookmark class="w-4 h-4 text-lofi-primary" />
-                <span>Your Saved Stream Bookmarks:</span>
-              </div>
-              <button
-                @click="ytStore.openBookmarksFolder"
-                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-lofi-surface/60 hover:bg-lofi-card text-lofi-muted hover:text-lofi-text border border-lofi-border/60 transition-all active:scale-95 cursor-pointer group"
-                title="Open youtube_bookmarks.json location on disk"
-              >
-                <FileJson class="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform" />
-                <span class="text-2xs font-medium">Open JSON File</span>
-              </button>
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <div
-                v-for="bm in ytStore.bookmarks"
-                :key="bm.id"
-                @click="ytStore.playUrl(bm.videoId, bm.title)"
-                :class="[
-                  'p-2.5 rounded-xl border flex items-center justify-between gap-3 cursor-pointer group transition-all',
-                  ytStore.isPlaying && ytStore.currentVideoId === bm.videoId
-                    ? 'bg-lofi-card border-lofi-primary/60 ring-1 ring-lofi-primary/30 shadow-lg'
-                    : 'bg-lofi-surface/40 hover:bg-lofi-card border-lofi-border'
-                ]"
-              >
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <img :src="bm.thumbnailUrl" class="w-16 h-11 rounded-lg object-cover flex-shrink-0 border border-lofi-border" />
-                  <div class="min-w-0 truncate">
-                    <p class="text-xs font-semibold text-lofi-text truncate group-hover:text-lofi-primary leading-tight">{{ bm.title }}</p>
-                    <p class="text-2xs text-lofi-muted truncate mt-0.5">{{ bm.channel }}</p>
-                  </div>
-                </div>
-
-                <button
-                  @click.stop="ytStore.deleteBookmark(bm.videoId)"
-                  class="p-1.5 rounded-lg text-lofi-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                  title="Delete Bookmark"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mode 2: Focus To-Do List View -->
-        <div
-          v-if="rightPanelMode === 'todo'"
-          class="w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-4 md:p-5 backdrop-blur-md shadow-2xl overflow-hidden animate-fadeIn"
-        >
-          <TodoView class="!p-0 !max-w-none" />
-        </div>
-
-        <!-- Mode 3: Notes & Memos View -->
-        <div
-          v-if="rightPanelMode === 'note'"
-          class="w-full bg-lofi-surface/80 border border-lofi-border rounded-3xl p-4 md:p-5 backdrop-blur-md shadow-2xl overflow-hidden animate-fadeIn"
-        >
-          <NoteView class="!p-0 !max-w-none" />
-        </div>
-      </div>
+        <PanelRightOpen class="w-4 h-4 group-hover:scale-110 transition-transform" />
+      </button>
     </div>
   </div>
 </template>
@@ -614,6 +456,18 @@ onUnmounted(() => {
 <style scoped>
 .text-2xs {
   font-size: 0.68rem;
+}
+
+#youtube-player-element-wrapper,
+#youtube-player-element,
+:deep(#youtube-player-element-wrapper iframe),
+:deep(#youtube-player-element iframe) {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  contain: strict;
+  border: 0;
+  outline: 0;
 }
 
 .invisible-player {
@@ -625,6 +479,7 @@ onUnmounted(() => {
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: visible !important;
+  contain: strict !important;
 }
 
 @keyframes fadeIn {

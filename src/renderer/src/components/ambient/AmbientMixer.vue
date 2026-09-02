@@ -6,7 +6,7 @@ const ambientStore = useAmbientStore()
 </script>
 
 <template>
-  <div class="w-full h-full flex flex-col p-6 overflow-y-auto max-w-5xl mx-auto">
+  <div class="w-full h-full flex flex-col p-6 overflow-y-auto">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
       <div>

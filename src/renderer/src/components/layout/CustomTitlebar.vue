@@ -10,7 +10,9 @@ import {
   Maximize2,
   Music,
   Activity,
-  PanelRight
+  PanelRight,
+  PanelRightClose,
+  PanelRightOpen
 } from 'lucide-vue-next'
 import { useAppStore } from '../../stores/app'
 import { usePlayerStore } from '../../stores/player'
@@ -106,6 +108,20 @@ onMounted(async () => {
       >
         <Pin v-if="isPinned" class="w-3 h-3" />
         <PinOff v-else class="w-3 h-3" />
+      </button>
+
+      <!-- Workspace Sidebar Toggle (Right Column) -->
+      <button
+        v-if="!appStore.isMiniPlayer && !appStore.isDockMode"
+        @click="appStore.toggleRightSidebar"
+        :class="[
+          'p-1.5 rounded-md transition-colors',
+          appStore.showRightSidebar ? 'text-lofi-pink bg-lofi-pink/15' : 'hover:text-lofi-text hover:bg-lofi-card'
+        ]"
+        :title="appStore.showRightSidebar ? 'Hide Workspace Sidebar (Tasks, Stations, Notes)' : 'Show Workspace Sidebar (Tasks, Stations, Notes)'"
+      >
+        <PanelRightClose v-if="appStore.showRightSidebar" class="w-3 h-3" />
+        <PanelRightOpen v-else class="w-3 h-3" />
       </button>
 
       <!-- Dock Sidebar Mode Toggle -->

@@ -71,7 +71,7 @@ function selectTrackGenre(trackId: string, genre: LofiGenre): void {
 </script>
 
 <template>
-  <div class="w-full h-full flex flex-col p-6 overflow-hidden max-w-6xl mx-auto">
+  <div class="w-full h-full flex flex-col p-6 overflow-hidden">
     <!-- Top Header: Title, Search & Import Actions -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
       <div>
